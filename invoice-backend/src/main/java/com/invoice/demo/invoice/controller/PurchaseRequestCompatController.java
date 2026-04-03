@@ -1,8 +1,8 @@
-package com.invoice.demo.purchaserequest.controller;
+package com.invoice.demo.invoice.controller;
 
-import com.invoice.demo.purchaserequest.dto.CreatePurchaseRequestRequest;
-import com.invoice.demo.purchaserequest.dto.PurchaseRequestResponse;
-import com.invoice.demo.purchaserequest.service.PurchaseRequestService;
+import com.invoice.demo.invoice.dto.CreateInvoiceRequest;
+import com.invoice.demo.invoice.dto.CreateInvoiceResponse;
+import com.invoice.demo.invoice.service.InvoiceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,12 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/purchase-requests")
 @RequiredArgsConstructor
-public class PurchaseRequestController {
-    private final PurchaseRequestService purchaseRequestService;
+public class PurchaseRequestCompatController {
+    private final InvoiceService invoiceService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public PurchaseRequestResponse create(@Valid @RequestBody CreatePurchaseRequestRequest request) {
-        return purchaseRequestService.create(request);
+    public CreateInvoiceResponse create(@Valid @RequestBody CreateInvoiceRequest request) {
+        return invoiceService.create(request);
     }
 }

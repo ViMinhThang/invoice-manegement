@@ -1,25 +1,44 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; // 1. Import useNavigate
 
 const ItemDetailsForm = () => {
+  const navigate = useNavigate(); // 2. Khởi tạo navigate
   const [itemName, setItemName] = useState('');
-  const [quantity, setQuantity] = useState(1); // Mặc định là 1 cho hợp lý
+  const [quantity, setQuantity] = useState(1);
   const [unit, setUnit] = useState('Cái');
   const [needsDeposit, setNeedsDeposit] = useState(false);
 
   const handleSave = () => {
     // Kiểm tra nhanh phía Frontend
+    if (!itemName) {
+      alert("Vui lòng nhập tên mặt hàng!");
+      return;
+    }
     if (quantity <= 0) {
       alert("Số lượng phải lớn hơn 0!");
       return;
     }
 
-   
+    // Giả lập lưu dữ liệu thành công
+    console.log("Đã lưu:", { itemName, quantity, unit, needsDeposit });
+
+    // 3. Điều hướng sang trang /payments
+    navigate('/payments');
   };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="max-w-xl w-full p-8 bg-white rounded-xl shadow-lg font-sans text-gray-700">
+        
+        {/* Nút quay lại nhanh (Optional) */}
+        <button 
+          onClick={() => navigate('/payments')}
+          className="mb-4 text-xs text-blue-500 hover:underline"
+        >
+          &larr; Xem danh sách thanh toán
+        </button>
+
         <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center uppercase tracking-tight">
           Chi tiết mặt hàng
         </h2>
@@ -47,12 +66,11 @@ const ItemDetailsForm = () => {
               </label>
               <input
                 type="number"
-                min="1" // Ràng buộc HTML cơ bản cho số dương
+                min="1"
                 className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all text-gray-700"
                 value={quantity}
                 onChange={(e) => {
                   const val = Number(e.target.value);
-                  // Chỉ set giá trị nếu nó >= 0 (hoặc xử lý theo logic của bạn)
                   setQuantity(val < 0 ? 0 : val); 
                 }}
               />
@@ -92,7 +110,7 @@ const ItemDetailsForm = () => {
             </label>
           </div>
 
-          {/* AC3: Nút Lưu to và ở giữa */}
+          {/* AC3: Nút Lưu */}
           <div className="pt-4">
             <button
               onClick={handleSave}
@@ -101,43 +119,11 @@ const ItemDetailsForm = () => {
             >
               LƯU THÔNG TIN
             </button>
-            <p className="text-center text-[10px] text-gray-400 mt-3 uppercase tracking-widest">
-            
-            </p>
           </div>
         </div>
-
-        <label className="flex items-center gap-2 text-sm text-gray-700">
-          <input
-            type="checkbox"
-            checked={requiresDeposit}
-            onChange={(e) => setRequiresDeposit(e.target.checked)}
-          />
-          Co can dat coc khong?
-        </label>
-
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full rounded-md bg-blue-600 px-4 py-3 text-white font-semibold hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-        >
-          {isSubmitting ? 'Submitting...' : 'Submit'}
-        </button>
-      </form>
-
-      {errorMessage && (
-        <p className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-600">{errorMessage}</p>
-      )}
-
-      {successData && (
-        <div className="mt-4 rounded-md bg-green-50 p-3 text-sm text-green-700">
-          <p>Submit thanh cong.</p>
-          <p>ID: {successData.id}</p>
-          <p>Status: {successData.status}</p>
-        </div>
-      )}
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default ItemDetailsForm
+export default ItemDetailsForm;
