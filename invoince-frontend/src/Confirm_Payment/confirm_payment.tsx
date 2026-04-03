@@ -42,7 +42,7 @@ const PaymentQueue = () => {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-end mb-8">
           <div>
-            <h1 className="text-2xl font-bold mb-1">Payment Queue</h1>
+            <h1 className="text-2xl font-bold mb-1">Hóa đơn thanh toán </h1>
             <p className="text-gray-600 text-sm">Invoice list from API mode: {getApiMode()}</p>
           </div>
 
@@ -59,12 +59,12 @@ const PaymentQueue = () => {
         {!loading && !errorMessage && (
           <>
             <div className="grid grid-cols-12 px-6 mb-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-              <div className="col-span-2">Reference ID</div>
-              <div className="col-span-3">Client Entity</div>
-              <div className="col-span-2 text-center">Amount</div>
-              <div className="col-span-2 text-center">Issued At</div>
-              <div className="col-span-2 text-center">Status</div>
-              <div className="col-span-1 text-right">Actions</div>
+              <div className="col-span-2">Mã giao dịch</div>
+              <div className="col-span-3">Khách hàng</div>
+              <div className="col-span-2 text-center">Số Lượng</div>
+              <div className="col-span-2 text-center">Ngày thanh toán</div>
+              <div className="col-span-2 text-center">Trạng thái</div>
+              <div className="col-span-1 text-right">Xác nhận</div>
             </div>
 
             <div className="space-y-4">
