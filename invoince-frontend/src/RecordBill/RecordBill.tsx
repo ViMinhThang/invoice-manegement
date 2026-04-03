@@ -51,10 +51,7 @@ const RecordBill = () => {
                 Tổng số tiền hóa đơn
               </label>
               <div className="relative">
-                {/* Ký hiệu tiền tệ cố định */}
-                <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-gray-700 font-bold">
-                  $
-                </div>
+              
                 <input
                   type="text"
                   placeholder="0.00"
