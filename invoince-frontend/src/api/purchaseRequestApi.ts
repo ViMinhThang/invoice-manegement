@@ -1,6 +1,8 @@
 import {
+  mockGetInvoices,
   mockCreatePurchaseRequest,
   type CreatePurchaseRequestPayload,
+  type InvoiceItem,
   type PurchaseRequestResponse,
 } from '../mocks/purchaseRequestMockApi'
 
@@ -36,6 +38,23 @@ const createPurchaseRequestReal = async (
   return (await response.json()) as PurchaseRequestResponse
 }
 
+const getInvoicesReal = async (): Promise<InvoiceItem[]> => {
+  const response = await fetch(`${API_BASE_URL}/api/invoices`)
+
+  if (!response.ok) {
+    let errorMessage = `Real API failed (${response.status})`
+    try {
+      const errorBody = (await response.json()) as { message?: string; error?: string }
+      errorMessage = errorBody.message ?? errorBody.error ?? errorMessage
+    } catch {
+      // keep default message when response is not JSON
+    }
+    throw new Error(errorMessage)
+  }
+
+  return (await response.json()) as InvoiceItem[]
+}
+
 export const createPurchaseRequest = async (
   payload: CreatePurchaseRequestPayload,
 ): Promise<PurchaseRequestResponse> => {
@@ -55,3 +74,19 @@ export const createPurchaseRequest = async (
 }
 
 export const getApiMode = (): ApiMode => API_MODE
+
+export const getInvoices = async (): Promise<InvoiceItem[]> => {
+  if (API_MODE === 'mock') {
+    return mockGetInvoices()
+  }
+
+  if (API_MODE === 'real') {
+    return getInvoicesReal()
+  }
+
+  try {
+    return await getInvoicesReal()
+  } catch {
+    return mockGetInvoices()
+  }
+}
