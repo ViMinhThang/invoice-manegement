@@ -15,6 +15,7 @@ const Sidebar = ({ children }) => {
 
   const menuItems = [
     { name: 'Đơn Hàng', icon: <LayoutDashboard size={20} />, path: '/' },
+    { name: 'Đơn Hàng', icon: <LayoutDashboard size={20} />, path: '/' },
     { name: 'Hóa Đơn Thanh Toán', icon: <CreditCard size={20} />, path: '/payments' },
   ];
 
