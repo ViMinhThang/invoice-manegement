@@ -45,6 +45,31 @@ const createPurchaseRequestReal = async (
   return (await response.json()) as PurchaseRequestResponse
 }
 
+const createInvoiceReal = async (
+  payload: CreatePurchaseRequestPayload,
+): Promise<PurchaseRequestResponse> => {
+  const response = await fetch(`${API_BASE_URL}/api/invoices`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    let errorMessage = `Real API failed (${response.status})`
+    try {
+      const errorBody = (await response.json()) as { message?: string; error?: string }
+      errorMessage = errorBody.message ?? errorBody.error ?? errorMessage
+    } catch {
+      // keep default message when response is not JSON
+    }
+    throw new Error(errorMessage)
+  }
+
+  return (await response.json()) as PurchaseRequestResponse
+}
+
 const getInvoicesReal = async (): Promise<InvoiceItem[]> => {
   const response = await fetch(`${API_BASE_URL}/api/invoices`)
 
@@ -163,6 +188,24 @@ export const getInvoices = async (): Promise<InvoiceItem[]> => {
     return await getInvoicesReal()
   } catch {
     return mockGetInvoices()
+  }
+}
+
+export const createInvoice = async (
+  payload: CreatePurchaseRequestPayload,
+): Promise<PurchaseRequestResponse> => {
+  if (API_MODE === 'mock') {
+    return mockCreatePurchaseRequest(payload)
+  }
+
+  if (API_MODE === 'real') {
+    return createInvoiceReal(payload)
+  }
+
+  try {
+    return await createInvoiceReal(payload)
+  } catch {
+    return mockCreatePurchaseRequest(payload)
   }
 }
 
