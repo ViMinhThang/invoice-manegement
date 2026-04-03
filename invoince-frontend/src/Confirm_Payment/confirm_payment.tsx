@@ -60,8 +60,8 @@ const PaymentQueue = () => {
           <>
             <div className="grid grid-cols-12 px-6 mb-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
               <div className="col-span-2">Mã giao dịch</div>
-              <div className="col-span-3">Khách hàng</div>
-              <div className="col-span-2 text-center">Số Lượng</div>
+              <div className="col-span-3">Nhà cung cấp</div>
+              <div className="col-span-2 text-center">Thành tiền</div>
               <div className="col-span-2 text-center">Ngày thanh toán</div>
               <div className="col-span-2 text-center">Trạng thái</div>
               <div className="col-span-1 text-right">Xác nhận</div>
