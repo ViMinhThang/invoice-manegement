@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 
 const ItemDetailsForm = () => {
   const navigate = useNavigate();
+  // State mới cho nhà cung cấp
+  const [vendorName, setVendorName] = useState('');
   const [itemName, setItemName] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [unit, setUnit] = useState('Cái');
@@ -12,22 +14,24 @@ const ItemDetailsForm = () => {
 
   // Hàm định dạng số: 1000 -> 1,000
   const formatNumber = (value: string) => {
-    // Xóa tất cả ký tự không phải là số
     const cleanValue = value.replace(/\D/g, '');
-    // Thêm dấu phẩy phân cách hàng nghìn
     return cleanValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
   const handleSave = () => {
+    if (!vendorName) {
+      alert("Vui lòng nhập tên nhà cung cấp!");
+      return;
+    }
     if (!itemName) {
       alert("Vui lòng nhập tên mặt hàng!");
       return;
     }
 
-    // Chuyển ngược từ chuỗi có dấu phẩy về số thuần túy để lưu trữ
     const numericPrice = Number(price.replace(/,/g, ''));
 
     console.log("Đã lưu:", { 
+      vendorName,
       itemName, 
       quantity, 
       unit, 
@@ -42,12 +46,26 @@ const ItemDetailsForm = () => {
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="max-w-xl w-full p-8 bg-white rounded-xl shadow-lg font-sans text-gray-700">
         
-
         <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center uppercase tracking-tight">
           Chi tiết mặt hàng
         </h2>
 
         <div className="space-y-6">
+          
+          {/* Tên nhà cung cấp (Mới thêm) */}
+          <div>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+              Tên nhà cung cấp
+            </label>
+            <input
+              type="text"
+              placeholder="Nhập tên công ty, đại lý..."
+              className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+              value={vendorName}
+              onChange={(e) => setVendorName(e.target.value)}
+            />
+          </div>
+
           {/* Tên món hàng */}
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
@@ -89,6 +107,8 @@ const ItemDetailsForm = () => {
                 >
                   <option value="Cái">Cái</option>
                   <option value="KG">KG</option>
+                  <option value="Bộ">Bộ</option>
+                  <option value="Chiếc">Chiếc</option>
                 </select>
                 <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
                   <ChevronDown size={18} />
@@ -97,7 +117,7 @@ const ItemDetailsForm = () => {
             </div>
           </div>
 
-          {/* Ô NHẬP GIÁ VỚI DẤU PHẨY TỰ ĐỘNG */}
+          {/* Ô nhập giá */}
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
               Giá đơn vị
@@ -108,10 +128,7 @@ const ItemDetailsForm = () => {
                 placeholder="0"
                 className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all text-gray-700 font-medium"
                 value={price}
-                onChange={(e) => {
-                  const formatted = formatNumber(e.target.value);
-                  setPrice(formatted);
-                }}
+                onChange={(e) => setPrice(formatNumber(e.target.value))}
               />
               <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400 font-bold text-xs">
                 VND
