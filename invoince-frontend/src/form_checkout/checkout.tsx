@@ -1,90 +1,105 @@
-import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react'
+import { ChevronDown } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { createInvoice } from '../api/purchaseRequestApi'
 
 const ItemDetailsForm = () => {
-  const navigate = useNavigate();
-  // State mới cho nhà cung cấp
-  const [vendorName, setVendorName] = useState('');
-  const [itemName, setItemName] = useState('');
-  const [quantity, setQuantity] = useState(1);
-  const [unit, setUnit] = useState('Cái');
-  const [price, setPrice] = useState('');
-  const [needsDeposit, setNeedsDeposit] = useState(false);
+  const navigate = useNavigate()
+  const [vendorName, setVendorName] = useState('')
+  const [itemName, setItemName] = useState('')
+  const [quantity, setQuantity] = useState(1)
+  const [unit, setUnit] = useState('Cai')
+  const [price, setPrice] = useState('')
+  const [needsDeposit, setNeedsDeposit] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Hàm định dạng số: 1000 -> 1,000
   const formatNumber = (value: string) => {
-    const cleanValue = value.replace(/\D/g, '');
-    return cleanValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  };
+    const cleanValue = value.replace(/\D/g, '')
+    return cleanValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  }
 
-  const handleSave = () => {
-    if (!vendorName) {
-      alert("Vui lòng nhập tên nhà cung cấp!");
-      return;
-    }
-    if (!itemName) {
-      alert("Vui lòng nhập tên mặt hàng!");
-      return;
+  const handleSave = async () => {
+    if (!vendorName.trim()) {
+      alert('Vui long nhap ten nha cung cap!')
+      return
     }
 
-    const numericPrice = Number(price.replace(/,/g, ''));
+    if (!itemName.trim()) {
+      alert('Vui long nhap ten mat hang!')
+      return
+    }
 
-    console.log("Đã lưu:", { 
-      vendorName,
-      itemName, 
-      quantity, 
-      unit, 
-      price: numericPrice, 
-      needsDeposit 
-    });
+    if (quantity <= 0) {
+      alert('So luong phai lon hon 0!')
+      return
+    }
 
-    navigate('/payments');
-  };
+    try {
+      setIsSubmitting(true)
+      await createInvoice({
+        itemName: itemName.trim(),
+        quantity,
+        unit,
+        requiresDeposit: needsDeposit,
+      })
+
+      const numericPrice = Number(price.replace(/,/g, ''))
+      console.log('Da luu:', {
+        vendorName,
+        itemName,
+        quantity,
+        unit,
+        price: Number.isFinite(numericPrice) ? numericPrice : 0,
+        needsDeposit,
+      })
+
+      navigate('/payments')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Luu that bai'
+      alert(message)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="max-w-xl w-full p-8 bg-white rounded-xl shadow-lg font-sans text-gray-700">
-        
         <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center uppercase tracking-tight">
-          Chi tiết mặt hàng
+          Chi tiet mat hang
         </h2>
 
         <div className="space-y-6">
-          
-          {/* Tên nhà cung cấp (Mới thêm) */}
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-              Tên nhà cung cấp
+              Ten nha cung cap
             </label>
             <input
               type="text"
-              placeholder="Nhập tên công ty, đại lý..."
+              placeholder="Nhap ten cong ty, dai ly..."
               className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
               value={vendorName}
               onChange={(e) => setVendorName(e.target.value)}
             />
           </div>
 
-          {/* Tên món hàng */}
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-              Tên món hàng
+              Ten mon hang
             </label>
             <input
               type="text"
-              placeholder="Nhập tên mặt hàng..."
+              placeholder="Nhap ten mat hang..."
               className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
               value={itemName}
               onChange={(e) => setItemName(e.target.value)}
             />
           </div>
 
-          {/* Số lượng và Đơn vị */}
           <div className="flex gap-4">
             <div className="flex-1">
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                Số lượng
+                So luong
               </label>
               <input
                 type="number"
@@ -97,7 +112,7 @@ const ItemDetailsForm = () => {
 
             <div className="flex-1">
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                Đơn vị
+                Don vi
               </label>
               <div className="relative">
                 <select
@@ -105,10 +120,10 @@ const ItemDetailsForm = () => {
                   value={unit}
                   onChange={(e) => setUnit(e.target.value)}
                 >
-                  <option value="Cái">Cái</option>
+                  <option value="Cai">Cai</option>
                   <option value="KG">KG</option>
-                  <option value="Bộ">Bộ</option>
-                  <option value="Chiếc">Chiếc</option>
+                  <option value="Bo">Bo</option>
+                  <option value="Chiec">Chiec</option>
                 </select>
                 <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
                   <ChevronDown size={18} />
@@ -117,10 +132,9 @@ const ItemDetailsForm = () => {
             </div>
           </div>
 
-          {/* Ô nhập giá */}
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-              Giá đơn vị
+              Gia don vi
             </label>
             <div className="relative">
               <input
@@ -136,7 +150,6 @@ const ItemDetailsForm = () => {
             </div>
           </div>
 
-          {/* Checkbox */}
           <div className="flex items-center gap-3 py-2">
             <input
               type="checkbox"
@@ -146,24 +159,24 @@ const ItemDetailsForm = () => {
               onChange={(e) => setNeedsDeposit(e.target.checked)}
             />
             <label htmlFor="deposit" className="font-medium text-gray-600 cursor-pointer select-none">
-              Xác nhận đặt cọc
+              Xac nhan dat coc
             </label>
           </div>
 
-          {/* Nút Lưu */}
           <div className="pt-4">
             <button
               onClick={handleSave}
+              disabled={isSubmitting}
               style={{ backgroundColor: '#4B6382' }}
-              className="w-full py-4 text-white font-black text-lg rounded-xl transition-all shadow-lg active:scale-[0.98] hover:opacity-90"
+              className="w-full py-4 text-white font-black text-lg rounded-xl transition-all shadow-lg active:scale-[0.98] hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              LƯU THÔNG TIN
+              {isSubmitting ? 'Dang luu...' : 'LUU THONG TIN'}
             </button>
           </div>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ItemDetailsForm;
+export default ItemDetailsForm

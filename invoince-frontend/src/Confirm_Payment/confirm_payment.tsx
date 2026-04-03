@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { ChevronDown, Pencil, Trash2, X, AlertCircle } from 'lucide-react'
-import { getApiMode, getInvoices } from '../api/purchaseRequestApi'
-import type { InvoiceItem } from '../mocks/purchaseRequestMockApi'
+import { confirmPaid, getApiMode, getBills } from '../api/purchaseRequestApi'
+import type { BillItem } from '../mocks/purchaseRequestMockApi'
 
-// Format tiền tệ VNĐ (Hoặc USD tùy bạn chọn, ở đây tôi để VNĐ cho đồng bộ tiếng Việt)
+// Format tiền tệ VNĐ
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)
 
@@ -15,38 +15,59 @@ const formatDate = (isoDate: string) =>
   })
 
 const PaymentQueue = () => {
-  const [payments, setPayments] = useState<InvoiceItem[]>([])
+  const [payments, setPayments] = useState<BillItem[]>([])
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
+  const [confirmingInvoiceIds, setConfirmingInvoiceIds] = useState<number[]>([])
 
   // State cho Modal Chỉnh sửa
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [editingItem, setEditingItem] = useState<InvoiceItem | null>(null)
+  const [editingItem, setEditingItem] = useState<BillItem | null>(null)
+
+  const fetchBills = async () => {
+    setLoading(true)
+    setErrorMessage('')
+    try {
+      const data = await getBills()
+      setPayments(data)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Không thể tải hóa đơn. Vui lòng thử lại.'
+      setErrorMessage(message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchInvoices = async () => {
-      setLoading(true)
-      setErrorMessage('')
-      try {
-        const data = await getInvoices()
-        setPayments(data)
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Không thể tải hóa đơn. Vui lòng thử lại.'
-        setErrorMessage(message)
-      } finally {
-        setLoading(false)
-      }
-    }
-    void fetchInvoices()
+    void fetchBills()
   }, [])
 
+  const handleConfirmPaid = async (invoiceId: number) => {
+    setErrorMessage('')
+    setConfirmingInvoiceIds((prev) => [...prev, invoiceId])
+
+    try {
+      const result = await confirmPaid(invoiceId)
+      setPayments((prev) =>
+        prev.map((item) =>
+          item.invoiceId === invoiceId ? { ...item, invoiceStatus: result.status } : item,
+        ),
+      )
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Không thể xác nhận thanh toán. Vui lòng thử lại.'
+      setErrorMessage(message)
+    } finally {
+      setConfirmingInvoiceIds((prev) => prev.filter((id) => id !== invoiceId))
+    }
+  }
+
   // Hàm mở modal chỉnh sửa
-  const openEditModal = (item: InvoiceItem) => {
+  const openEditModal = (item: BillItem) => {
     setEditingItem({ ...item }) // Tạo bản sao để sửa
     setIsEditModalOpen(true)
   }
 
-  // Hàm lưu thay đổi từ modal
+  // Hàm lưu thay đổi từ modal (Hiện tại chỉ cập nhật local state, có thể bổ sung API sau)
   const handleSaveEdit = () => {
     if (editingItem) {
       setPayments(prev => prev.map(p => p.id === editingItem.id ? editingItem : p))
@@ -88,7 +109,7 @@ const PaymentQueue = () => {
               <div className="col-span-2">Mã giao dịch</div>
               <div className="col-span-3">Nhà cung cấp</div>
               <div className="col-span-2 text-center">Thành tiền</div>
-              <div className="col-span-2 text-center">Ngày lập</div>
+              <div className="col-span-2 text-center">Hạn thanh toán</div>
               <div className="col-span-1 text-center">Trạng thái</div>
               <div className="col-span-2 text-right">Thao tác</div>
             </div>
@@ -106,19 +127,25 @@ const PaymentQueue = () => {
                     {formatCurrency(item.totalAmount)}
                   </div>
                   <div className="col-span-2 text-center text-sm font-medium">
-                    {formatDate(item.issuedAt)}
+                    {formatDate(item.deadline)}
                   </div>
                   <div className="col-span-1 flex justify-center">
                     <span className="px-3 py-1 rounded-full text-[10px] font-black tracking-tighter bg-[#ced7e0] text-[#4b5563] uppercase">
-                      {item.status}
+                      {item.invoiceStatus}
                     </span>
                   </div>
                   
                   {/* Nút Hành động */}
                   <div className="col-span-2 flex justify-end items-center gap-4">
-              
-                    <button className="bg-[#0f172a] text-white text-[10px] font-bold py-2 px-4 rounded-lg hover:bg-black transition-colors uppercase ml-2">
-                      Xác nhận
+                    <button
+                      onClick={() => handleConfirmPaid(item.invoiceId)}
+                      disabled={
+                        item.invoiceStatus !== 'Awaiting Payment' ||
+                        confirmingInvoiceIds.includes(item.invoiceId)
+                      }
+                      className="bg-[#0f172a] text-white text-[10px] font-bold py-2 px-4 rounded-lg hover:bg-black transition-colors uppercase disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {confirmingInvoiceIds.includes(item.invoiceId) ? 'Đang xác nhận...' : 'Xác nhận'}
                     </button>
 
                     <button 
@@ -180,13 +207,13 @@ const PaymentQueue = () => {
                 <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Trạng thái</label>
                 <div className="relative">
                   <select 
-                    value={editingItem.status}
-                    onChange={(e) => setEditingItem({...editingItem, status: e.target.value})}
+                    value={editingItem.invoiceStatus}
+                    onChange={(e) => setEditingItem({...editingItem, invoiceStatus: e.target.value})}
                     className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none appearance-none font-semibold cursor-pointer"
                   >
-                    <option value="pending">PENDING (Chờ duyệt)</option>
-                    <option value="paid">PAID (Đã thanh toán)</option>
-                    <option value="cancelled">CANCELLED (Hủy bỏ)</option>
+                    <option value="Awaiting Payment">Awaiting Payment (Chờ duyệt)</option>
+                    <option value="Completed/Invoiced">Completed/Invoiced (Đã thanh toán)</option>
+                    <option value="Cancelled">Cancelled (Hủy bỏ)</option>
                   </select>
                   <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
                 </div>

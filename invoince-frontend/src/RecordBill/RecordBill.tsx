@@ -1,77 +1,165 @@
-import React, { useState } from 'react';
-import { ChevronDown, CalendarDays, CloudUpload, CornerDownLeft } from 'lucide-react';
+import { useEffect, useState } from 'react'
+import { ChevronDown, CalendarDays, CloudUpload, CornerDownLeft } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { createBill, getInvoices } from '../api/purchaseRequestApi'
+import type { InvoiceItem } from '../mocks/purchaseRequestMockApi'
 
 const RecordBill = () => {
-  const [selectedFile, setSelectedFile] = useState(null);
+  const navigate = useNavigate()
+  const [invoices, setInvoices] = useState<InvoiceItem[]>([])
+  const [invoiceId, setInvoiceId] = useState('')
+  const [totalAmount, setTotalAmount] = useState('')
+  const [deadline, setDeadline] = useState('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [loadingInvoices, setLoadingInvoices] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
+
+  useEffect(() => {
+    const fetchInvoices = async () => {
+      setLoadingInvoices(true)
+      setErrorMessage('')
+      try {
+        const data = await getInvoices()
+        const openInvoices = data.filter((item) => item.status === 'Open')
+        setInvoices(openInvoices)
+        if (openInvoices.length > 0) {
+          setInvoiceId(String(openInvoices[0].id))
+          setTotalAmount(String(openInvoices[0].totalAmount))
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Khong tai duoc danh sach yeu cau.'
+        setErrorMessage(message)
+      } finally {
+        setLoadingInvoices(false)
+      }
+    }
+
+    void fetchInvoices()
+  }, [])
+
+  const handleSave = async () => {
+    setErrorMessage('')
+    setSuccessMessage('')
+
+    const parsedInvoiceId = Number(invoiceId)
+    const parsedAmount = Number(totalAmount)
+    const deadlineDate = new Date(deadline)
+
+    if (!Number.isInteger(parsedInvoiceId) || parsedInvoiceId <= 0) {
+      setErrorMessage('Vui long chon yeu cau mua hang.')
+      return
+    }
+
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      setErrorMessage('Tong so tien hoa don phai lon hon 0.')
+      return
+    }
+
+    if (!deadline || Number.isNaN(deadlineDate.getTime())) {
+      setErrorMessage('Han thanh toan khong hop le.')
+      return
+    }
+
+    if (deadlineDate.getTime() <= Date.now()) {
+      setErrorMessage('Han thanh toan phai o tuong lai.')
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      await createBill({
+        invoiceId: parsedInvoiceId,
+        totalAmount: parsedAmount,
+        deadline: deadlineDate.toISOString(),
+        file: selectedFile,
+      })
+      setSuccessMessage('Tao bill thanh cong. Trang thai da chuyen sang Awaiting Payment.')
+      setTimeout(() => navigate('/payments'), 700)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Khong the luu bill.'
+      setErrorMessage(message)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
-    // Container chính với màu nền xám xanh nhạt
     <div className="min-h-screen bg-[#d1d9e2] p-10 font-sans text-[#1a2b4b]">
       <div className="max-w-4xl mx-auto">
-        
-        {/* Phần Tiêu đề */}
         <div className="mb-10">
           <h1 className="text-4xl font-black text-[#0f172a] mb-2 tracking-tighter">
-            Ghi nhận Hóa đơn phải trả
+            Ghi nhan Hoa don phai tra
           </h1>
           <p className="text-gray-600 text-lg">
-            Liên kết hóa đơn vật lý với yêu cầu mua hàng hiện có để đối chiếu.
+            Lien ket hoa don vat ly voi yeu cau mua hang hien co de doi chieu.
           </p>
         </div>
 
-        {/* Phần Thẻ Form (Card) */}
         <div className="bg-[#aeb9c7] p-10 rounded-2xl shadow-sm space-y-8 mb-10">
-          
-          {/* Trường 1: Liên kết Yêu cầu mua hàng */}
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-              Liên kết Yêu cầu mua hàng
+              Lien ket Yeu cau mua hang
             </label>
             <div className="relative">
-              <select className="w-full p-5 bg-white rounded-xl outline-none text-[#1a2b4b] appearance-none cursor-pointer pr-12 text-sm">
-                <option>Chọn một yêu cầu đang chờ xử lý...</option>
-                <option>YCMH-2023-01: Văn phòng phẩm tháng 10</option>
-                <option>YCMH-2023-02: Thiết bị Server</option>
+              <select
+                className="w-full p-5 bg-white rounded-xl outline-none text-[#1a2b4b] appearance-none cursor-pointer pr-12 text-sm disabled:opacity-70"
+                value={invoiceId}
+                disabled={loadingInvoices || invoices.length === 0}
+                onChange={(e) => {
+                  setInvoiceId(e.target.value)
+                  const selected = invoices.find((item) => String(item.id) === e.target.value)
+                  if (selected) {
+                    setTotalAmount(String(selected.totalAmount))
+                  }
+                }}
+              >
+                {loadingInvoices && <option>Dang tai du lieu...</option>}
+                {!loadingInvoices && invoices.length === 0 && <option>Khong co yeu cau dang Open.</option>}
+                {!loadingInvoices &&
+                  invoices.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.invoiceNumber} - {item.customerName}
+                    </option>
+                  ))}
               </select>
-              {/* Icon mũi tên xuống custom */}
               <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
                 <ChevronDown size={20} />
               </div>
             </div>
             <p className="text-[11px] text-gray-600 mt-2 font-medium">
-              Chỉ các yêu cầu mua hàng đã được phê duyệt và có hóa đơn đang chờ mới được liệt kê.
+              Chi cac yeu cau mua hang trang thai Open moi duoc tao bill.
             </p>
           </div>
 
-          {/* Dòng 2: Tổng số tiền và Hạn thanh toán */}
           <div className="flex gap-6">
-            {/* Tổng số tiền hóa đơn */}
             <div className="flex-1">
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                Tổng số tiền hóa đơn
+                Tong so tien hoa don
               </label>
-              <div className="relative">
-              
-                <input
-                  type="text"
-                  placeholder="0.00"
-                  className="w-full p-5 pl-10 bg-white rounded-xl outline-none text-[#1a2b4b]"
-                />
-              </div>
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                placeholder="0.00"
+                className="w-full p-5 bg-white rounded-xl outline-none text-[#1a2b4b]"
+                value={totalAmount}
+                onChange={(e) => setTotalAmount(e.target.value)}
+              />
             </div>
-            
-            {/* Hạn thanh toán */}
+
             <div className="flex-1">
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                Hạn thanh toán
+                Han thanh toan
               </label>
               <div className="relative">
                 <input
-                  type="text"
-                  placeholder="ngày/tháng/năm" // Định dạng tiếng Việt
+                  type="datetime-local"
                   className="w-full p-5 bg-white rounded-xl outline-none text-[#1a2b4b]"
+                  value={deadline}
+                  onChange={(e) => setDeadline(e.target.value)}
                 />
-                {/* Icon lịch custom */}
                 <div className="absolute inset-y-0 right-5 flex items-center pointer-events-none text-gray-400">
                   <CalendarDays size={20} />
                 </div>
@@ -79,51 +167,63 @@ const RecordBill = () => {
             </div>
           </div>
 
-          {/* Trường 3: Đính kèm Tài liệu */}
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-              Đính kèm Tài liệu Hóa đơn (PDF/JPG)
+              Dinh kem Tai lieu Hoa don (PDF/JPG)
             </label>
-            {/* Vùng Drag & Drop */}
-            <div className="border-2 border-dashed border-gray-400 rounded-2xl p-12 flex flex-col items-center justify-center text-center cursor-pointer hover:border-gray-500 hover:bg-white/10 transition-all">
+            <label className="border-2 border-dashed border-gray-400 rounded-2xl p-12 flex flex-col items-center justify-center text-center cursor-pointer hover:border-gray-500 hover:bg-white/10 transition-all">
               <CloudUpload size={40} className="text-gray-500 mb-4" />
-              <p className="font-bold text-[#1a2b4b]">Nhấp để tải lên hoặc kéo và thả</p>
-              <p className="text-xs text-gray-600 mt-1">Kích thước tệp tối đa: 15MB</p>
-            </div>
+              <p className="font-bold text-[#1a2b4b]">
+                {selectedFile ? selectedFile.name : 'Nhan de tai len hoac keo va tha'}
+              </p>
+              <p className="text-xs text-gray-600 mt-1">Kich thuoc tep toi da: 10MB</p>
+              <input
+                type="file"
+                className="hidden"
+                accept=".pdf,.png,.jpg,.jpeg,.gif,.webp"
+                onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
+              />
+            </label>
           </div>
+
+          {errorMessage && <p className="rounded-md bg-red-100 px-4 py-3 text-sm text-red-700">{errorMessage}</p>}
+          {successMessage && (
+            <p className="rounded-md bg-green-100 px-4 py-3 text-sm text-green-700">{successMessage}</p>
+          )}
         </div>
 
-        {/* Phần Các nút hành động bên dưới */}
         <div className="flex justify-between items-center px-6">
-          {/* Nút Hủy bỏ bên trái */}
-          <button className="text-sm font-black uppercase text-[#0f172a] hover:underline flex items-center gap-2">
-            <CornerDownLeft size={16} /> Hủy bỏ
+          <button
+            onClick={() => navigate('/payments')}
+            className="text-sm font-black uppercase text-[#0f172a] hover:underline flex items-center gap-2"
+          >
+            <CornerDownLeft size={16} /> Huy bo
           </button>
-          
-          {/* Phần bên phải: Trạng thái và Nút Lưu */}
+
           <div className="flex items-center gap-8">
-            {/* Trạng thái sau hành động */}
             <div className="flex items-center gap-3">
               <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                Trạng thái sau hành động
+                Trang thai sau hanh dong
               </span>
               <span className="flex items-center gap-2 font-bold text-sm text-[#0f172a]">
-                {/* Dấu chấm màu nâu giống ảnh */}
-                <div className="w-2.5 h-2.5 rounded-full bg-[#8a6d4d]"></div>
-                Đang chờ thanh toán
+                <span className="w-2.5 h-2.5 rounded-full bg-[#8a6d4d]" />
+                Dang cho thanh toan
               </span>
             </div>
-            
-            {/* Nút Lưu và Hoàn tất */}
-            <button className="bg-[#0f172a] text-white font-bold py-4 px-10 rounded-full hover:bg-black transition-colors flex items-center gap-2 text-sm">
-              Lưu và Hoàn tất
-              <span className="text-xs">→</span>
+
+            <button
+              onClick={handleSave}
+              disabled={isSubmitting || loadingInvoices || invoices.length === 0}
+              className="bg-[#0f172a] text-white font-bold py-4 px-10 rounded-full hover:bg-black transition-colors flex items-center gap-2 text-sm disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? 'Dang luu...' : 'Luu va Hoan tat'}
+              <span className="text-xs">{'->'}</span>
             </button>
           </div>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default RecordBill;
+export default RecordBill
