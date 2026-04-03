@@ -1,9 +1,9 @@
-package com.invoice.demo.invoice.dto;
+package com.invoice.demo.purchaseRequest.dto;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
-public record InvoiceResponse(
+public record PurchaseRequestResponse(
         Long id,
         String invoiceNumber,
         String customerName,
