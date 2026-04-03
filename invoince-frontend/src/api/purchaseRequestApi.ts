@@ -1,9 +1,9 @@
 import {
   mockGetInvoices,
-  mockCreatePurchaseRequest,
-  type CreatePurchaseRequestPayload,
+  mockCreateInvoice,
+  type CreateInvoicePayload,
+  type CreateInvoiceResponse,
   type InvoiceItem,
-  type PurchaseRequestResponse,
 } from '../mocks/purchaseRequestMockApi'
 
 type ApiMode = 'mock' | 'real' | 'hybrid'
@@ -13,15 +13,23 @@ const API_MODE: ApiMode =
   RAW_MODE === 'real' || RAW_MODE === 'hybrid' ? (RAW_MODE as ApiMode) : 'mock'
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 
-const createPurchaseRequestReal = async (
-  payload: CreatePurchaseRequestPayload,
-): Promise<PurchaseRequestResponse> => {
-  const response = await fetch(`${API_BASE_URL}/api/purchase-requests`, {
+const createInvoiceReal = async (
+  payload: CreateInvoicePayload,
+): Promise<CreateInvoiceResponse> => {
+  // Backend currently expects legacy CreateInvoiceRequest fields.
+  const legacyPayload = {
+    itemName: payload.customerName,
+    quantity: payload.totalAmount,
+    unit: 'Amount',
+    requiresDeposit: false,
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/invoices`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(legacyPayload),
   })
 
   if (!response.ok) {
@@ -35,7 +43,23 @@ const createPurchaseRequestReal = async (
     throw new Error(errorMessage)
   }
 
-  return (await response.json()) as PurchaseRequestResponse
+  const responseBody = (await response.json()) as {
+    id: number
+    itemName: string
+    quantity: number
+    status: string
+    createdAt: string
+  }
+
+  return {
+    id: responseBody.id,
+    invoiceNumber: `INV-${responseBody.id}`,
+    customerName: responseBody.itemName,
+    totalAmount: responseBody.quantity,
+    status: responseBody.status,
+    issuedAt: responseBody.createdAt,
+    createdAt: responseBody.createdAt,
+  }
 }
 
 const getInvoicesReal = async (): Promise<InvoiceItem[]> => {
@@ -55,21 +79,21 @@ const getInvoicesReal = async (): Promise<InvoiceItem[]> => {
   return (await response.json()) as InvoiceItem[]
 }
 
-export const createPurchaseRequest = async (
-  payload: CreatePurchaseRequestPayload,
-): Promise<PurchaseRequestResponse> => {
+export const createInvoice = async (
+  payload: CreateInvoicePayload,
+): Promise<CreateInvoiceResponse> => {
   if (API_MODE === 'mock') {
-    return mockCreatePurchaseRequest(payload)
+    return mockCreateInvoice(payload)
   }
 
   if (API_MODE === 'real') {
-    return createPurchaseRequestReal(payload)
+    return createInvoiceReal(payload)
   }
 
   try {
-    return await createPurchaseRequestReal(payload)
+    return await createInvoiceReal(payload)
   } catch {
-    return mockCreatePurchaseRequest(payload)
+    return mockCreateInvoice(payload)
   }
 }
 

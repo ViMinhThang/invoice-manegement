@@ -1,17 +1,16 @@
-export type CreatePurchaseRequestPayload = {
-  itemName: string
-  quantity: number
-  unit: string
-  requiresDeposit: boolean
+export type CreateInvoicePayload = {
+  customerName: string
+  totalAmount: number
+  status: string
 }
 
-export type PurchaseRequestResponse = {
+export type CreateInvoiceResponse = {
   id: number
-  itemName: string
-  quantity: number
-  unit: string
-  requiresDeposit: boolean
-  status: 'Open'
+  invoiceNumber: string
+  customerName: string
+  totalAmount: number
+  status: string
+  issuedAt: string
   createdAt: string
 }
 
@@ -26,22 +25,22 @@ export type InvoiceItem = {
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-export const mockCreatePurchaseRequest = async (
-  payload: CreatePurchaseRequestPayload,
-): Promise<PurchaseRequestResponse> => {
+export const mockCreateInvoice = async (
+  payload: CreateInvoicePayload,
+): Promise<CreateInvoiceResponse> => {
   await wait(700)
 
-  if (!payload.itemName.trim() || payload.quantity <= 0 || !payload.unit.trim()) {
-    throw new Error('Du lieu khong hop le. Vui long kiem tra lai form.')
+  if (!payload.customerName.trim() || payload.totalAmount <= 0 || !payload.status.trim()) {
+    throw new Error('Invalid invoice data. Please review the form values.')
   }
 
   return {
     id: Math.floor(Math.random() * 10_000) + 1,
-    itemName: payload.itemName.trim(),
-    quantity: payload.quantity,
-    unit: payload.unit,
-    requiresDeposit: payload.requiresDeposit,
-    status: 'Open',
+    invoiceNumber: `INV-MOCK${Math.floor(1000 + Math.random() * 9000)}`,
+    customerName: payload.customerName.trim(),
+    totalAmount: payload.totalAmount,
+    status: payload.status,
+    issuedAt: new Date().toISOString(),
     createdAt: new Date().toISOString(),
   }
 }

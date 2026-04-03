@@ -1,93 +1,105 @@
-import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; // 1. Import useNavigate
+import { useState } from 'react'
+import { ChevronDown } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { createInvoice } from '../api/purchaseRequestApi'
 
-const ItemDetailsForm = () => {
-  const navigate = useNavigate(); // 2. Khởi tạo navigate
-  const [itemName, setItemName] = useState('');
-  const [quantity, setQuantity] = useState(1);
-  const [unit, setUnit] = useState('Cái');
-  const [needsDeposit, setNeedsDeposit] = useState(false);
+const INVOICE_STATUSES = ['Open', 'Paid', 'Overdue'] as const
 
-  const handleSave = () => {
-    // Kiểm tra nhanh phía Frontend
-    if (!itemName) {
-      alert("Vui lòng nhập tên mặt hàng!");
-      return;
+const CheckoutForm = () => {
+  const navigate = useNavigate()
+  const [customerName, setCustomerName] = useState('')
+  const [totalAmount, setTotalAmount] = useState<string>('')
+  const [status, setStatus] = useState<(typeof INVOICE_STATUSES)[number]>('Open')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+
+  const handleSave = async () => {
+    setErrorMessage('')
+    const normalizedCustomerName = customerName.trim()
+    const parsedAmount = Number(totalAmount)
+
+    if (!normalizedCustomerName) {
+      setErrorMessage('Customer name is required.')
+      return
     }
-    if (quantity <= 0) {
-      alert("Số lượng phải lớn hơn 0!");
-      return;
+
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      setErrorMessage('Total amount must be greater than 0.')
+      return
     }
 
-    // Giả lập lưu dữ liệu thành công
-    console.log("Đã lưu:", { itemName, quantity, unit, needsDeposit });
-
-    // 3. Điều hướng sang trang /payments
-    navigate('/payments');
-  };
+    setIsSubmitting(true)
+    try {
+      const createdInvoice = await createInvoice({
+        customerName: normalizedCustomerName,
+        totalAmount: parsedAmount,
+        status,
+      })
+      navigate('/payments', { state: { newlyCreatedInvoice: createdInvoice } })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Cannot create invoice. Please try again.'
+      setErrorMessage(message)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="max-w-xl w-full p-8 bg-white rounded-xl shadow-lg font-sans text-gray-700">
-        
-        {/* Nút quay lại nhanh (Optional) */}
-        <button 
-          onClick={() => navigate('/payments')}
-          className="mb-4 text-xs text-blue-500 hover:underline"
-        >
-          &larr; Xem danh sách thanh toán
+        <button onClick={() => navigate('/payments')} className="mb-4 text-xs text-blue-500 hover:underline">
+          &larr; Back to payment queue
         </button>
 
         <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center uppercase tracking-tight">
-          Chi tiết mặt hàng
+          Create Invoice
         </h2>
 
         <div className="space-y-6">
-          {/* Tên món hàng */}
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-              Tên món hàng
+              Customer Name
             </label>
             <input
               type="text"
-              placeholder="Nhập tên mặt hàng..."
+              placeholder="Enter customer name..."
               className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all text-gray-700"
-              value={itemName}
-              onChange={(e) => setItemName(e.target.value)}
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
             />
           </div>
 
-          {/* Số lượng và Đơn vị */}
           <div className="flex gap-4">
             <div className="flex-1">
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                Số lượng
+                Total Amount
               </label>
               <input
                 type="number"
-                min="1"
+                min="0.01"
+                step="0.01"
+                placeholder="0.00"
                 className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all text-gray-700"
-                value={quantity}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  setQuantity(val < 0 ? 0 : val); 
-                }}
+                value={totalAmount}
+                onChange={(e) => setTotalAmount(e.target.value)}
               />
             </div>
 
             <div className="flex-1">
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                Đơn vị
+                Status
               </label>
               <div className="relative">
                 <select
                   className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all appearance-none cursor-pointer"
-                  value={unit}
-                  onChange={(e) => setUnit(e.target.value)}
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as (typeof INVOICE_STATUSES)[number])}
                 >
-                  <option value="Cái">Cái</option>
-                  <option value="KG">KG</option>
+                  {INVOICE_STATUSES.map((invoiceStatus) => (
+                    <option key={invoiceStatus} value={invoiceStatus}>
+                      {invoiceStatus}
+                    </option>
+                  ))}
                 </select>
                 <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
                   <ChevronDown size={18} />
@@ -96,34 +108,22 @@ const ItemDetailsForm = () => {
             </div>
           </div>
 
-          {/* AC2: Checkbox */}
-          <div className="flex items-center gap-3 py-2">
-            <input
-              type="checkbox"
-              id="deposit"
-              className="w-5 h-5 accent-blue-600 border-gray-300 rounded cursor-pointer"
-              checked={needsDeposit}
-              onChange={(e) => setNeedsDeposit(e.target.checked)}
-            />
-            <label htmlFor="deposit" className="font-medium text-gray-600 cursor-pointer select-none">
-              Có cần đặt cọc không?
-            </label>
-          </div>
+          {errorMessage && <p className="rounded-md bg-red-100 px-4 py-3 text-sm text-red-700">{errorMessage}</p>}
 
-          {/* AC3: Nút Lưu */}
           <div className="pt-4">
             <button
               onClick={handleSave}
+              disabled={isSubmitting}
               style={{ backgroundColor: '#4B6382' }}
-              className="w-full py-4 text-white font-black text-lg rounded-xl transition-all shadow-lg active:scale-[0.98] opacity-100 hover:opacity-90"
+              className="w-full py-4 text-white font-black text-lg rounded-xl transition-all shadow-lg active:scale-[0.98] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              LƯU THÔNG TIN
+              {isSubmitting ? 'Saving...' : 'SAVE INVOICE'}
             </button>
           </div>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ItemDetailsForm;
+export default CheckoutForm

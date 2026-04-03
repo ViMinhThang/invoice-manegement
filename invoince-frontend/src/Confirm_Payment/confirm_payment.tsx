@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
+import { useLocation } from 'react-router-dom'
 import { getApiMode, getInvoices } from '../api/purchaseRequestApi'
 import type { InvoiceItem } from '../mocks/purchaseRequestMockApi'
 
@@ -13,10 +14,21 @@ const formatDate = (isoDate: string) =>
     day: '2-digit',
   })
 
+const sortInvoicesNewestFirst = (items: InvoiceItem[]) =>
+  [...items].sort((a, b) => {
+    const aTime = new Date(a.issuedAt).getTime()
+    const bTime = new Date(b.issuedAt).getTime()
+    if (aTime !== bTime) return bTime - aTime
+    return b.id - a.id
+  })
+
 const PaymentQueue = () => {
+  const location = useLocation()
   const [payments, setPayments] = useState<InvoiceItem[]>([])
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
+  const newlyCreatedInvoice = (location.state as { newlyCreatedInvoice?: InvoiceItem } | null)
+    ?.newlyCreatedInvoice
 
   useEffect(() => {
     const fetchInvoices = async () => {
@@ -24,7 +36,12 @@ const PaymentQueue = () => {
       setErrorMessage('')
       try {
         const data = await getInvoices()
-        setPayments(data)
+        const merged =
+          newlyCreatedInvoice && !data.some((item) => item.id === newlyCreatedInvoice.id)
+            ? [newlyCreatedInvoice, ...data]
+            : data
+
+        setPayments(sortInvoicesNewestFirst(merged))
       } catch (error) {
         const message =
           error instanceof Error ? error.message : 'Cannot load invoices. Please try again.'
@@ -35,7 +52,7 @@ const PaymentQueue = () => {
     }
 
     void fetchInvoices()
-  }, [])
+  }, [newlyCreatedInvoice])
 
   return (
     <div className="min-h-screen bg-[#d1d9e2] p-8 font-sans text-[#1a2b4b]">
