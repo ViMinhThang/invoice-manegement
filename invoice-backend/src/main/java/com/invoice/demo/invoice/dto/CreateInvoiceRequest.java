@@ -1,11 +1,11 @@
-package com.invoice.demo.purchaserequest.dto;
+package com.invoice.demo.invoice.dto;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
-public record CreatePurchaseRequestRequest(
+public record CreateInvoiceRequest(
         @NotBlank(message = "Item name is required")
         String itemName,
         @NotNull(message = "Quantity is required")

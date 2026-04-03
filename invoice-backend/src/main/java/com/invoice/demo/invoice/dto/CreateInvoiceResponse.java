@@ -1,16 +1,15 @@
-package com.invoice.demo.purchaserequest.dto;
+package com.invoice.demo.invoice.dto;
 
-import com.invoice.demo.purchaserequest.entity.PurchaseRequestStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-public record PurchaseRequestResponse(
+public record CreateInvoiceResponse(
         Long id,
         String itemName,
         BigDecimal quantity,
         String unit,
         boolean requiresDeposit,
-        PurchaseRequestStatus status,
+        String status,
         Instant createdAt
 ) {
 }

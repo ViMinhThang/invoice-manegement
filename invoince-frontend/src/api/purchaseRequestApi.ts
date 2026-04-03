@@ -23,7 +23,14 @@ const createPurchaseRequestReal = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Real API failed (${response.status})`)
+    let errorMessage = `Real API failed (${response.status})`
+    try {
+      const errorBody = (await response.json()) as { message?: string; error?: string }
+      errorMessage = errorBody.message ?? errorBody.error ?? errorMessage
+    } catch {
+      // keep default message when response is not JSON
+    }
+    throw new Error(errorMessage)
   }
 
   return (await response.json()) as PurchaseRequestResponse
