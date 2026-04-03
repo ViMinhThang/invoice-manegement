@@ -5,7 +5,8 @@ import {
   Users, 
   CreditCard, 
   BarChart3, 
-  Settings 
+  Settings, 
+  ReceiptText
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -15,7 +16,7 @@ const Sidebar = ({ children }) => {
 
   const menuItems = [
     { name: 'Đơn Hàng', icon: <LayoutDashboard size={20} />, path: '/' },
-    { name: 'Đơn Hàng', icon: <LayoutDashboard size={20} />, path: '/' },
+    { name: 'Phiếu Báo Nợ', icon: <ReceiptText size={20} />, path: '/record-bill' },
     { name: 'Hóa Đơn Thanh Toán', icon: <CreditCard size={20} />, path: '/payments' },
   ];
 

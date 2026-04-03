@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-// Import các icons cần thiết từ lucide-react
 import { ChevronDown, CalendarDays, CloudUpload, CornerDownLeft } from 'lucide-react';
 
-const GhiNhanHoaDon = () => {
-  // State để quản lý tệp tin được chọn (tùy chọn mở rộng sau này)
+const RecordBill = () => {
   const [selectedFile, setSelectedFile] = useState(null);
 
   return (
@@ -131,4 +129,4 @@ const GhiNhanHoaDon = () => {
   );
 };
 
-export default GhiNhanHoaDon;
+export default RecordBill;
