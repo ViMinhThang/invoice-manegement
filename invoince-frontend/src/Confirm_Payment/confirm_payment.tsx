@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Pencil, Trash2 } from 'lucide-react'
 import { confirmPaid, getApiMode, getBills } from '../api/purchaseRequestApi'
 import type { BillItem } from '../mocks/purchaseRequestMockApi'
 
@@ -58,7 +58,7 @@ const PaymentQueue = () => {
 
   return (
     <div className="min-h-screen bg-[#d1d9e2] p-8 font-sans text-[#1a2b4b]">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-end mb-8">
           <div>
             <h1 className="text-2xl font-bold mb-1">Hoa don thanh toan</h1>
@@ -79,11 +79,12 @@ const PaymentQueue = () => {
           <>
             <div className="grid grid-cols-12 px-6 mb-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
               <div className="col-span-2">Ma giao dich</div>
-              <div className="col-span-3">Khach hang</div>
-              <div className="col-span-2 text-center">Tong tien</div>
-              <div className="col-span-2 text-center">Han thanh toan</div>
+              <div className="col-span-2">Nha cung cap</div>
+              <div className="col-span-2 text-center">Thanh tien</div>
+              <div className="col-span-2 text-center">Ngay thanh toan</div>
               <div className="col-span-2 text-center">Trang thai</div>
-              <div className="col-span-1 text-right">Xac nhan</div>
+              <div className="col-span-1 text-center">Xac nhan</div>
+              <div className="col-span-1 text-right">Thao tac</div>
             </div>
 
             <div className="space-y-4">
@@ -93,28 +94,36 @@ const PaymentQueue = () => {
                   className="grid grid-cols-12 items-center bg-[#aeb9c7] hover:bg-[#a4b0bf] transition-colors p-6 rounded-lg shadow-sm"
                 >
                   <div className="col-span-2 font-bold text-xs">{item.invoiceNumber}</div>
-                  <div className="col-span-3 font-bold text-sm">{item.customerName}</div>
+                  <div className="col-span-2 font-bold text-sm truncate pr-2">{item.customerName}</div>
                   <div className="col-span-2 text-center font-bold text-lg">
                     {formatCurrency(item.totalAmount)}
                   </div>
-                  <div className="col-span-2 text-center text-sm font-medium">
-                    {formatDate(item.deadline)}
-                  </div>
+                  <div className="col-span-2 text-center text-sm font-medium">{formatDate(item.deadline)}</div>
                   <div className="col-span-2 flex justify-center">
                     <span className="px-3 py-1 rounded-full text-[10px] font-black tracking-tighter bg-[#ced7e0] text-[#6b7c93]">
                       {item.invoiceStatus.toUpperCase()}
                     </span>
                   </div>
-                  <div className="col-span-1 text-right">
+
+                  <div className="col-span-1 text-center">
                     <button
+                      onClick={() => handleConfirmPaid(item.invoiceId)}
                       disabled={
                         item.invoiceStatus !== 'Awaiting Payment' ||
                         confirmingInvoiceIds.includes(item.invoiceId)
                       }
-                      onClick={() => handleConfirmPaid(item.invoiceId)}
                       className="bg-[#0f172a] text-white text-[10px] font-bold py-2 px-3 rounded leading-tight hover:bg-black transition-colors uppercase disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {confirmingInvoiceIds.includes(item.invoiceId) ? 'Confirming...' : 'Confirm'}
+                    </button>
+                  </div>
+
+                  <div className="col-span-1 flex justify-end gap-3">
+                    <button className="text-[#1a2b4b] hover:text-blue-700 transition-colors" title="Chinh sua">
+                      <Pencil size={18} />
+                    </button>
+                    <button className="text-[#1a2b4b] hover:text-red-700 transition-colors" title="Xoa">
+                      <Trash2 size={18} />
                     </button>
                   </div>
                 </div>

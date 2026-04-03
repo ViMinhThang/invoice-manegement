@@ -5,13 +5,13 @@ import { createInvoice } from '../api/purchaseRequestApi'
 
 const ItemDetailsForm = () => {
   const navigate = useNavigate()
+  const [vendorName, setVendorName] = useState('')
   const [itemName, setItemName] = useState('')
   const [quantity, setQuantity] = useState(1)
   const [unit, setUnit] = useState('Cai')
   const [price, setPrice] = useState('')
   const [needsDeposit, setNeedsDeposit] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
 
   const formatNumber = (value: string) => {
     const cleanValue = value.replace(/\D/g, '')
@@ -19,37 +19,34 @@ const ItemDetailsForm = () => {
   }
 
   const handleSave = async () => {
-    setErrorMessage('')
-
-    const normalizedName = itemName.trim()
-    if (!normalizedName) {
-      setErrorMessage('Vui long nhap ten mat hang.')
+    if (!vendorName.trim()) {
+      alert('Vui long nhap ten nha cung cap!')
       return
     }
 
-    if (!Number.isFinite(quantity) || quantity <= 0) {
-      setErrorMessage('So luong phai lon hon 0.')
+    if (!itemName.trim()) {
+      alert('Vui long nhap ten mat hang!')
       return
     }
 
-    if (!unit.trim()) {
-      setErrorMessage('Don vi khong duoc de trong.')
+    if (quantity <= 0) {
+      alert('So luong phai lon hon 0!')
       return
     }
 
-    setIsSubmitting(true)
     try {
+      setIsSubmitting(true)
       await createInvoice({
-        itemName: normalizedName,
+        itemName: itemName.trim(),
         quantity,
         unit,
         requiresDeposit: needsDeposit,
       })
 
-      // keep local computed price usage for UI parity/logging
       const numericPrice = Number(price.replace(/,/g, ''))
-      console.log('Da luu purchase request', {
-        itemName: normalizedName,
+      console.log('Da luu:', {
+        vendorName,
+        itemName,
         quantity,
         unit,
         price: Number.isFinite(numericPrice) ? numericPrice : 0,
@@ -58,8 +55,8 @@ const ItemDetailsForm = () => {
 
       navigate('/payments')
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Khong the luu du lieu. Vui long thu lai.'
-      setErrorMessage(message)
+      const message = error instanceof Error ? error.message : 'Luu that bai'
+      alert(message)
     } finally {
       setIsSubmitting(false)
     }
@@ -73,6 +70,19 @@ const ItemDetailsForm = () => {
         </h2>
 
         <div className="space-y-6">
+          <div>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+              Ten nha cung cap
+            </label>
+            <input
+              type="text"
+              placeholder="Nhap ten cong ty, dai ly..."
+              className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+              value={vendorName}
+              onChange={(e) => setVendorName(e.target.value)}
+            />
+          </div>
+
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
               Ten mon hang
@@ -112,6 +122,8 @@ const ItemDetailsForm = () => {
                 >
                   <option value="Cai">Cai</option>
                   <option value="KG">KG</option>
+                  <option value="Bo">Bo</option>
+                  <option value="Chiec">Chiec</option>
                 </select>
                 <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
                   <ChevronDown size={18} />
@@ -130,10 +142,7 @@ const ItemDetailsForm = () => {
                 placeholder="0"
                 className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all text-gray-700 font-medium"
                 value={price}
-                onChange={(e) => {
-                  const formatted = formatNumber(e.target.value)
-                  setPrice(formatted)
-                }}
+                onChange={(e) => setPrice(formatNumber(e.target.value))}
               />
               <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400 font-bold text-xs">
                 VND
@@ -153,8 +162,6 @@ const ItemDetailsForm = () => {
               Xac nhan dat coc
             </label>
           </div>
-
-          {errorMessage && <p className="rounded-md bg-red-100 px-4 py-3 text-sm text-red-700">{errorMessage}</p>}
 
           <div className="pt-4">
             <button

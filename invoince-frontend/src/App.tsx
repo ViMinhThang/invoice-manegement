@@ -17,11 +17,10 @@ function App() {
           <Route path="/invoices" element={<ItemDetailsForm />} />
           
           <Route path="/payments" element={<PaymentQueue />} />
-
-          <Route path="/record-bill" element={<RecordBill />} />
-          <Route path="/recordbill" element={<RecordBill />} />
           
           <Route path="/dashboard" element={<Dashboard />} />
+
+          <Route path="/record-bill" element={<RecordBill />} />
           
           <Route path="*" element={<div className="p-8">404 - Page Not Found</div>} />
         </Routes>

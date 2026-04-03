@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ChevronDown, CalendarDays, CloudUpload, CornerDownLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { createBill, getInvoices } from '../api/purchaseRequestApi'
@@ -6,13 +6,12 @@ import type { InvoiceItem } from '../mocks/purchaseRequestMockApi'
 
 const RecordBill = () => {
   const navigate = useNavigate()
-
   const [invoices, setInvoices] = useState<InvoiceItem[]>([])
-  const [loadingInvoices, setLoadingInvoices] = useState(true)
-  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string>('')
-  const [totalAmount, setTotalAmount] = useState<string>('')
-  const [deadline, setDeadline] = useState<string>('')
+  const [invoiceId, setInvoiceId] = useState('')
+  const [totalAmount, setTotalAmount] = useState('')
+  const [deadline, setDeadline] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [loadingInvoices, setLoadingInvoices] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
@@ -21,19 +20,16 @@ const RecordBill = () => {
     const fetchInvoices = async () => {
       setLoadingInvoices(true)
       setErrorMessage('')
-
       try {
-        const allInvoices = await getInvoices()
-        const recordableInvoices = allInvoices.filter((item) => item.status === 'Open')
-        setInvoices(recordableInvoices)
-
-        if (recordableInvoices.length > 0) {
-          setSelectedInvoiceId(String(recordableInvoices[0].id))
-          setTotalAmount(String(recordableInvoices[0].totalAmount))
+        const data = await getInvoices()
+        const openInvoices = data.filter((item) => item.status === 'Open')
+        setInvoices(openInvoices)
+        if (openInvoices.length > 0) {
+          setInvoiceId(String(openInvoices[0].id))
+          setTotalAmount(String(openInvoices[0].totalAmount))
         }
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : 'Khong the tai danh sach purchase request.'
+        const message = error instanceof Error ? error.message : 'Khong tai duoc danh sach yeu cau.'
         setErrorMessage(message)
       } finally {
         setLoadingInvoices(false)
@@ -43,51 +39,46 @@ const RecordBill = () => {
     void fetchInvoices()
   }, [])
 
-  const selectedInvoice = useMemo(
-    () => invoices.find((invoice) => String(invoice.id) === selectedInvoiceId),
-    [invoices, selectedInvoiceId],
-  )
-
-  const handleSubmit = async () => {
+  const handleSave = async () => {
     setErrorMessage('')
     setSuccessMessage('')
 
-    const invoiceId = Number(selectedInvoiceId)
-    const amount = Number(totalAmount)
+    const parsedInvoiceId = Number(invoiceId)
+    const parsedAmount = Number(totalAmount)
     const deadlineDate = new Date(deadline)
 
-    if (!Number.isInteger(invoiceId) || invoiceId <= 0) {
-      setErrorMessage('Vui long chon purchase request.')
+    if (!Number.isInteger(parsedInvoiceId) || parsedInvoiceId <= 0) {
+      setErrorMessage('Vui long chon yeu cau mua hang.')
       return
     }
 
-    if (!Number.isFinite(amount) || amount <= 0) {
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
       setErrorMessage('Tong so tien hoa don phai lon hon 0.')
       return
     }
 
     if (!deadline || Number.isNaN(deadlineDate.getTime())) {
-      setErrorMessage('Vui long chon han thanh toan hop le.')
+      setErrorMessage('Han thanh toan khong hop le.')
       return
     }
 
     if (deadlineDate.getTime() <= Date.now()) {
-      setErrorMessage('Han thanh toan phai lon hon thoi diem hien tai.')
+      setErrorMessage('Han thanh toan phai o tuong lai.')
       return
     }
 
     setIsSubmitting(true)
     try {
       await createBill({
-        invoiceId,
-        totalAmount: amount,
+        invoiceId: parsedInvoiceId,
+        totalAmount: parsedAmount,
         deadline: deadlineDate.toISOString(),
         file: selectedFile,
       })
-      setSuccessMessage('Da tao bill thanh cong. Trang thai invoice da chuyen sang Awaiting Payment.')
+      setSuccessMessage('Tao bill thanh cong. Trang thai da chuyen sang Awaiting Payment.')
       setTimeout(() => navigate('/payments'), 700)
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Khong the luu bill. Vui long thu lai.'
+      const message = error instanceof Error ? error.message : 'Khong the luu bill.'
       setErrorMessage(message)
     } finally {
       setIsSubmitting(false)
@@ -113,11 +104,11 @@ const RecordBill = () => {
             </label>
             <div className="relative">
               <select
-                className="w-full p-5 bg-white rounded-xl outline-none text-[#1a2b4b] appearance-none cursor-pointer pr-12 text-sm disabled:cursor-not-allowed disabled:opacity-70"
-                value={selectedInvoiceId}
+                className="w-full p-5 bg-white rounded-xl outline-none text-[#1a2b4b] appearance-none cursor-pointer pr-12 text-sm disabled:opacity-70"
+                value={invoiceId}
                 disabled={loadingInvoices || invoices.length === 0}
                 onChange={(e) => {
-                  setSelectedInvoiceId(e.target.value)
+                  setInvoiceId(e.target.value)
                   const selected = invoices.find((item) => String(item.id) === e.target.value)
                   if (selected) {
                     setTotalAmount(String(selected.totalAmount))
@@ -125,13 +116,11 @@ const RecordBill = () => {
                 }}
               >
                 {loadingInvoices && <option>Dang tai du lieu...</option>}
-                {!loadingInvoices && invoices.length === 0 && (
-                  <option>Khong co purchase request dang Open.</option>
-                )}
+                {!loadingInvoices && invoices.length === 0 && <option>Khong co yeu cau dang Open.</option>}
                 {!loadingInvoices &&
-                  invoices.map((invoice) => (
-                    <option key={invoice.id} value={invoice.id}>
-                      {invoice.invoiceNumber} - {invoice.customerName}
+                  invoices.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.invoiceNumber} - {item.customerName}
                     </option>
                   ))}
               </select>
@@ -140,7 +129,7 @@ const RecordBill = () => {
               </div>
             </div>
             <p className="text-[11px] text-gray-600 mt-2 font-medium">
-              Chi cac yeu cau mua hang co trang thai Open moi duoc tao bill.
+              Chi cac yeu cau mua hang trang thai Open moi duoc tao bill.
             </p>
           </div>
 
@@ -192,7 +181,7 @@ const RecordBill = () => {
                 type="file"
                 className="hidden"
                 accept=".pdf,.png,.jpg,.jpeg,.gif,.webp"
-                onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
+                onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
               />
             </label>
           </div>
@@ -223,8 +212,8 @@ const RecordBill = () => {
             </div>
 
             <button
-              disabled={isSubmitting || loadingInvoices || invoices.length === 0 || !selectedInvoice}
-              onClick={handleSubmit}
+              onClick={handleSave}
+              disabled={isSubmitting || loadingInvoices || invoices.length === 0}
               className="bg-[#0f172a] text-white font-bold py-4 px-10 rounded-full hover:bg-black transition-colors flex items-center gap-2 text-sm disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Dang luu...' : 'Luu va Hoan tat'}
