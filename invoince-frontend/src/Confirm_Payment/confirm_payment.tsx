@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+// Thêm Pencil và Trash2 vào import
+import { ChevronDown, Pencil, Trash2 } from 'lucide-react'
 import { getApiMode, getInvoices } from '../api/purchaseRequestApi'
 import type { InvoiceItem } from '../mocks/purchaseRequestMockApi'
 
@@ -39,10 +40,10 @@ const PaymentQueue = () => {
 
   return (
     <div className="min-h-screen bg-[#d1d9e2] p-8 font-sans text-[#1a2b4b]">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto"> {/* Tăng max-width nhẹ để không bị chật */}
         <div className="flex justify-between items-end mb-8">
           <div>
-            <h1 className="text-2xl font-bold mb-1">Hóa đơn thanh toán </h1>
+            <h1 className="text-2xl font-bold mb-1">Hóa đơn thanh toán</h1>
             <p className="text-gray-600 text-sm">Invoice list from API mode: {getApiMode()}</p>
           </div>
 
@@ -58,13 +59,15 @@ const PaymentQueue = () => {
 
         {!loading && !errorMessage && (
           <>
+            {/* Header: Chỉnh lại col-span */}
             <div className="grid grid-cols-12 px-6 mb-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
               <div className="col-span-2">Mã giao dịch</div>
-              <div className="col-span-3">Nhà cung cấp</div>
+              <div className="col-span-2">Nhà cung cấp</div>
               <div className="col-span-2 text-center">Thành tiền</div>
               <div className="col-span-2 text-center">Ngày thanh toán</div>
               <div className="col-span-2 text-center">Trạng thái</div>
-              <div className="col-span-1 text-right">Xác nhận</div>
+              <div className="col-span-1 text-center">Xác nhận</div>
+              <div className="col-span-1 text-right">Thao tác</div>
             </div>
 
             <div className="space-y-4">
@@ -74,7 +77,7 @@ const PaymentQueue = () => {
                   className="grid grid-cols-12 items-center bg-[#aeb9c7] hover:bg-[#a4b0bf] transition-colors p-6 rounded-lg shadow-sm"
                 >
                   <div className="col-span-2 font-bold text-xs">{item.invoiceNumber}</div>
-                  <div className="col-span-3 font-bold text-sm">{item.customerName}</div>
+                  <div className="col-span-2 font-bold text-sm truncate pr-2">{item.customerName}</div>
                   <div className="col-span-2 text-center font-bold text-lg">
                     {formatCurrency(item.totalAmount)}
                   </div>
@@ -86,9 +89,27 @@ const PaymentQueue = () => {
                       {item.status.toUpperCase()}
                     </span>
                   </div>
-                  <div className="col-span-1 text-right">
+                  
+                  {/* Cột Confirm */}
+                  <div className="col-span-1 text-center">
                     <button className="bg-[#0f172a] text-white text-[10px] font-bold py-2 px-3 rounded leading-tight hover:bg-black transition-colors uppercase">
                       Confirm
+                    </button>
+                  </div>
+
+                  {/* Cột Thao tác mới */}
+                  <div className="col-span-1 flex justify-end gap-3">
+                    <button 
+                      className="text-[#1a2b4b] hover:text-blue-700 transition-colors"
+                      title="Chỉnh sửa"
+                    >
+                      <Pencil size={18} />
+                    </button>
+                    <button 
+                      className="text-[#1a2b4b] hover:text-red-700 transition-colors"
+                      title="Xóa"
+                    >
+                      <Trash2 size={18} />
                     </button>
                   </div>
                 </div>
