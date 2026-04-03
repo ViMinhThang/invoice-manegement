@@ -41,7 +41,7 @@ const createPurchaseRequestReal = async (
 const createInvoiceReal = async (
   payload: CreatePurchaseRequestPayload,
 ): Promise<PurchaseRequestResponse> => {
-  const response = await fetch(`${API_BASE_URL}/api/invoices`, {
+  const response = await fetch(`${API_BASE_URL}/api/purchase-requests`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -64,7 +64,24 @@ const createInvoiceReal = async (
 }
 
 const getInvoicesReal = async (): Promise<InvoiceItem[]> => {
-  const response = await fetch(`${API_BASE_URL}/api/invoices`)
+  const response = await fetch(`${API_BASE_URL}/api/purchase-requests`)
+
+  if (!response.ok) {
+    let errorMessage = `Real API failed (${response.status})`
+    try {
+      const errorBody = (await response.json()) as { message?: string; error?: string }
+      errorMessage = errorBody.message ?? errorBody.error ?? errorMessage
+    } catch {
+      // keep default message when response is not JSON
+    }
+    throw new Error(errorMessage)
+  }
+
+  return (await response.json()) as InvoiceItem[]
+}
+
+const getOpenPurchaseRequestsReal = async (): Promise<InvoiceItem[]> => {
+  const response = await fetch(`${API_BASE_URL}/api/purchase-requests/open`)
 
   if (!response.ok) {
     let errorMessage = `Real API failed (${response.status})`
@@ -126,7 +143,7 @@ const createBillReal = async (payload: CreateBillPayload): Promise<CreateBillRes
 }
 
 const confirmPaidReal = async (invoiceId: number): Promise<ConfirmPaidResponse> => {
-  const response = await fetch(`${API_BASE_URL}/api/invoices/${invoiceId}/confirm-paid`, {
+  const response = await fetch(`${API_BASE_URL}/api/purchase-requests/${invoiceId}/confirm-paid`, {
     method: 'PATCH',
   })
 
@@ -158,6 +175,10 @@ export const getApiMode = (): ApiMode => API_MODE
 
 export const getInvoices = async (): Promise<InvoiceItem[]> => {
   return getInvoicesReal()
+}
+
+export const getOpenPurchaseRequests = async (): Promise<InvoiceItem[]> => {
+  return getOpenPurchaseRequestsReal()
 }
 
 export const createInvoice = async (

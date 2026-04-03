@@ -1,6 +1,6 @@
 package com.invoice.demo.bill.entity;
 
-import com.invoice.demo.invoice.entity.Invoice;
+import com.invoice.demo.purchaseRequest.entity.PurchaseRequest;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -31,8 +31,8 @@ public class Bill {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "invoice_id", nullable = false, unique = true)
-    private Invoice invoice;
+    @JoinColumn(name = "purchase_request_id", nullable = false, unique = true)
+    private PurchaseRequest purchaseRequest;
 
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal totalAmount;

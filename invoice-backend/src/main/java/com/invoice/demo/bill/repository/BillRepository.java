@@ -6,8 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 public interface BillRepository extends JpaRepository<Bill, Long> {
-    boolean existsByInvoiceId(Long invoiceId);
+    boolean existsByPurchaseRequestId(Long purchaseRequestId);
 
-    @Query("select b from Bill b join fetch b.invoice i order by b.createdAt desc")
+    @Query("select b from Bill b join fetch b.purchaseRequest i order by b.createdAt desc")
     List<Bill> findAllWithInvoiceOrderByCreatedAtDesc();
 }

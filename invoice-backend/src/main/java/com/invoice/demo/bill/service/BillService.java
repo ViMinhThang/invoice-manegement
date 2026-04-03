@@ -5,9 +5,9 @@ import com.invoice.demo.bill.dto.CreateBillRequest;
 import com.invoice.demo.bill.dto.CreateBillResponse;
 import com.invoice.demo.bill.entity.Bill;
 import com.invoice.demo.bill.repository.BillRepository;
-import com.invoice.demo.invoice.entity.Invoice;
-import com.invoice.demo.invoice.repository.InvoiceRepository;
-import com.invoice.demo.invoice.service.InvoiceService;
+import com.invoice.demo.purchaseRequest.entity.PurchaseRequest;
+import com.invoice.demo.purchaseRequest.repository.PurchaseRequestRepository;
+import com.invoice.demo.purchaseRequest.service.PurchaseRequestService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -33,7 +33,7 @@ public class BillService {
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf");
 
     private final BillRepository billRepository;
-    private final InvoiceRepository invoiceRepository;
+    private final PurchaseRequestRepository purchaseRequestRepository;
     @Value("${app.storage.bill-dir:uploads/bills}")
     private String billUploadDir;
 
@@ -46,55 +46,55 @@ public class BillService {
 
     @Transactional
     public CreateBillResponse create(CreateBillRequest request, MultipartFile attachmentFile) {
-        Invoice invoice = invoiceRepository.findById(request.invoiceId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
+        PurchaseRequest purchaseRequest = purchaseRequestRepository.findById(request.invoiceId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Purchase Request not found"));
 
-        if (billRepository.existsByInvoiceId(request.invoiceId())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Bill already exists for this invoice");
+        if (billRepository.existsByPurchaseRequestId(request.invoiceId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Bill already exists for this purchase request");
         }
 
-        StoredAttachment storedAttachment = storeAttachment(invoice.getId(), attachmentFile);
+        StoredAttachment storedAttachment = storeAttachment(purchaseRequest.getId(), attachmentFile);
         Instant now = Instant.now();
         Bill bill = Bill.builder()
-                .invoice(invoice)
+                .purchaseRequest(purchaseRequest)
                 .totalAmount(request.totalAmount())
                 .deadline(request.deadline())
+                .createdAt(now)
                 .attachmentName(storedAttachment.attachmentName())
                 .attachmentPath(storedAttachment.attachmentPath())
-                .createdAt(now)
                 .build();
 
         Bill savedBill = billRepository.save(bill);
 
-        invoice.setStatus(InvoiceService.STATUS_AWAITING_PAYMENT);
-        invoiceRepository.save(invoice);
+        purchaseRequest.setStatus(PurchaseRequestService.STATUS_AWAITING_PAYMENT);
+        purchaseRequestRepository.save(purchaseRequest);
 
         return new CreateBillResponse(
                 savedBill.getId(),
-                invoice.getId(),
-                invoice.getInvoiceNumber(),
+                purchaseRequest.getId(),
+                purchaseRequest.getInvoiceNumber(),
                 savedBill.getTotalAmount(),
                 savedBill.getDeadline(),
                 savedBill.getAttachmentName(),
                 savedBill.getAttachmentPath(),
                 savedBill.getCreatedAt(),
-                invoice.getStatus()
+                purchaseRequest.getStatus()
         );
     }
 
     private BillListResponse toListResponse(Bill bill) {
-        Invoice invoice = bill.getInvoice();
+        PurchaseRequest purchaseRequest = bill.getPurchaseRequest();
         return new BillListResponse(
                 bill.getId(),
-                invoice.getId(),
-                invoice.getInvoiceNumber(),
-                invoice.getCustomerName(),
+                purchaseRequest.getId(),
+                purchaseRequest.getInvoiceNumber(),
+                purchaseRequest.getCustomerName(),
                 bill.getTotalAmount(),
                 bill.getDeadline(),
                 bill.getAttachmentName(),
                 bill.getAttachmentPath(),
                 bill.getCreatedAt(),
-                invoice.getStatus()
+                purchaseRequest.getStatus()
         );
     }
 

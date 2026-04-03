@@ -2,8 +2,8 @@ package com.invoice.demo.seeder;
 
 import com.invoice.demo.bill.entity.Bill;
 import com.invoice.demo.bill.repository.BillRepository;
-import com.invoice.demo.invoice.entity.Invoice;
-import com.invoice.demo.invoice.repository.InvoiceRepository;
+import com.invoice.demo.purchaseRequest.entity.PurchaseRequest;
+import com.invoice.demo.purchaseRequest.repository.PurchaseRequestRepository;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
@@ -20,32 +20,32 @@ public class BillSeeder implements CommandLineRunner {
     private static final String STATUS_AWAITING_PAYMENT = "Awaiting Payment";
 
     private final BillRepository billRepository;
-    private final InvoiceRepository invoiceRepository;
+    private final PurchaseRequestRepository purchaseRequestRepository;
 
     @Override
     public void run(String... args) {
         billRepository.deleteAll();
 
-        List<Invoice> invoices = invoiceRepository.findAll().stream()
-                .sorted(Comparator.comparing(Invoice::getId))
+        List<PurchaseRequest> purchaseRequests = purchaseRequestRepository.findAll().stream()
+                .sorted(Comparator.comparing(PurchaseRequest::getId))
                 .limit(5)
                 .toList();
 
-        if (invoices.isEmpty()) {
+        if (purchaseRequests.isEmpty()) {
             return;
         }
 
         Instant now = Instant.now();
-        for (int i = 0; i < invoices.size(); i++) {
-            Invoice invoice = invoices.get(i);
-            invoice.setStatus(STATUS_AWAITING_PAYMENT);
-            Invoice savedInvoice = invoiceRepository.save(invoice);
+        for (int i = 0; i < purchaseRequests.size(); i++) {
+            PurchaseRequest purchaseRequest = purchaseRequests.get(i);
+            purchaseRequest.setStatus(STATUS_AWAITING_PAYMENT);
+            PurchaseRequest saved = purchaseRequestRepository.save(purchaseRequest);
             Bill bill = Bill.builder()
-                    .invoice(savedInvoice)
-                    .totalAmount(savedInvoice.getTotalAmount())
+                    .purchaseRequest(saved)
+                    .totalAmount(saved.getTotalAmount())
                     .deadline(now.plus(i + 2L, ChronoUnit.DAYS))
-                    .attachmentName("seed-bill-" + savedInvoice.getInvoiceNumber() + ".pdf")
-                    .attachmentPath("seed-" + savedInvoice.getInvoiceNumber() + ".pdf")
+                    .attachmentName("seed-bill-" + saved.getInvoiceNumber() + ".pdf")
+                    .attachmentPath("seed-" + saved.getInvoiceNumber() + ".pdf")
                     .createdAt(now.minus(i + 1L, ChronoUnit.HOURS))
                     .build();
             billRepository.save(bill);

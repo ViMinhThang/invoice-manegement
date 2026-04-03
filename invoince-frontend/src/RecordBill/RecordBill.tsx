@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ChevronDown, CalendarDays, CloudUpload, CornerDownLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { createBill, getInvoices } from '../api/purchaseRequestApi'
+import { createBill, getOpenPurchaseRequests } from '../api/purchaseRequestApi'
 import type { InvoiceItem } from '../mocks/purchaseRequestMockApi'
 
 const RecordBill = () => {
@@ -21,15 +21,14 @@ const RecordBill = () => {
       setLoadingInvoices(true)
       setErrorMessage('')
       try {
-        const data = await getInvoices()
-        const openInvoices = data.filter((item) => item.status === 'Open')
+        const openInvoices = await getOpenPurchaseRequests()
         setInvoices(openInvoices)
         if (openInvoices.length > 0) {
           setInvoiceId(String(openInvoices[0].id))
           setTotalAmount(String(openInvoices[0].totalAmount))
         }
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Khong tai duoc danh sach yeu cau.'
+        const message = error instanceof Error ? error.message : 'Không tải được danh sách yêu cầu.'
         setErrorMessage(message)
       } finally {
         setLoadingInvoices(false)
@@ -48,22 +47,22 @@ const RecordBill = () => {
     const deadlineDate = new Date(deadline)
 
     if (!Number.isInteger(parsedInvoiceId) || parsedInvoiceId <= 0) {
-      setErrorMessage('Vui long chon yeu cau mua hang.')
+      setErrorMessage('Vui lòng chọn yêu cầu mua hàng.')
       return
     }
 
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-      setErrorMessage('Tong so tien hoa don phai lon hon 0.')
+      setErrorMessage('Tổng số tiền hóa đơn phải lớn hơn 0.')
       return
     }
 
     if (!deadline || Number.isNaN(deadlineDate.getTime())) {
-      setErrorMessage('Han thanh toan khong hop le.')
+      setErrorMessage('Hạn thanh toán không hợp lệ.')
       return
     }
 
     if (deadlineDate.getTime() <= Date.now()) {
-      setErrorMessage('Han thanh toan phai o tuong lai.')
+      setErrorMessage('Hạn thanh toán phải ở tương lai.')
       return
     }
 
@@ -75,10 +74,10 @@ const RecordBill = () => {
         deadline: deadlineDate.toISOString(),
         file: selectedFile,
       })
-      setSuccessMessage('Tao bill thanh cong. Trang thai da chuyen sang Awaiting Payment.')
+      setSuccessMessage('Tạo bill thành công. Trạng thái đã chuyển sang Awaiting Payment.')
       setTimeout(() => navigate('/payments'), 700)
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Khong the luu bill.'
+      const message = error instanceof Error ? error.message : 'Không thể lưu bill.'
       setErrorMessage(message)
     } finally {
       setIsSubmitting(false)
@@ -90,17 +89,17 @@ const RecordBill = () => {
       <div className="max-w-4xl mx-auto">
         <div className="mb-10">
           <h1 className="text-4xl font-black text-[#0f172a] mb-2 tracking-tighter">
-            Ghi nhan Hoa don phai tra
+            Ghi nhận Hóa đơn phải trả
           </h1>
           <p className="text-gray-600 text-lg">
-            Lien ket hoa don vat ly voi yeu cau mua hang hien co de doi chieu.
+            Liên kết hóa đơn vật lý với yêu cầu mua hàng hiện có để đối chiếu.
           </p>
         </div>
 
         <div className="bg-[#aeb9c7] p-10 rounded-2xl shadow-sm space-y-8 mb-10">
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-              Lien ket Yeu cau mua hang
+              Liên kết Yêu cầu mua hàng
             </label>
             <div className="relative">
               <select
@@ -115,8 +114,8 @@ const RecordBill = () => {
                   }
                 }}
               >
-                {loadingInvoices && <option>Dang tai du lieu...</option>}
-                {!loadingInvoices && invoices.length === 0 && <option>Khong co yeu cau dang Open.</option>}
+                {loadingInvoices && <option>Đang tải dữ liệu...</option>}
+                {!loadingInvoices && invoices.length === 0 && <option>Không có yêu cầu đang Open.</option>}
                 {!loadingInvoices &&
                   invoices.map((item) => (
                     <option key={item.id} value={item.id}>
@@ -129,14 +128,14 @@ const RecordBill = () => {
               </div>
             </div>
             <p className="text-[11px] text-gray-600 mt-2 font-medium">
-              Chi cac yeu cau mua hang trang thai Open moi duoc tao bill.
+              Chỉ các yêu cầu mua hàng trạng thái Open mới được tạo bill.
             </p>
           </div>
 
           <div className="flex gap-6">
             <div className="flex-1">
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                Tong so tien hoa don
+                Tổng số tiền hóa đơn
               </label>
               <input
                 type="number"
@@ -151,7 +150,7 @@ const RecordBill = () => {
 
             <div className="flex-1">
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                Han thanh toan
+                Hạn thanh toán
               </label>
               <div className="relative">
                 <input
@@ -169,14 +168,14 @@ const RecordBill = () => {
 
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-              Dinh kem Tai lieu Hoa don (PDF/JPG)
+              Đính kèm Tài liệu Hóa đơn (PDF/JPG)
             </label>
             <label className="border-2 border-dashed border-gray-400 rounded-2xl p-12 flex flex-col items-center justify-center text-center cursor-pointer hover:border-gray-500 hover:bg-white/10 transition-all">
               <CloudUpload size={40} className="text-gray-500 mb-4" />
               <p className="font-bold text-[#1a2b4b]">
-                {selectedFile ? selectedFile.name : 'Nhan de tai len hoac keo va tha'}
+                {selectedFile ? selectedFile.name : 'Nhấn để tải lên hoặc kéo và thả'}
               </p>
-              <p className="text-xs text-gray-600 mt-1">Kich thuoc tep toi da: 10MB</p>
+              <p className="text-xs text-gray-600 mt-1">Kích thước tệp tối đa: 10MB</p>
               <input
                 type="file"
                 className="hidden"
@@ -197,17 +196,17 @@ const RecordBill = () => {
             onClick={() => navigate('/payments')}
             className="text-sm font-black uppercase text-[#0f172a] hover:underline flex items-center gap-2"
           >
-            <CornerDownLeft size={16} /> Huy bo
+            <CornerDownLeft size={16} /> Hủy bỏ
           </button>
 
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-3">
               <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                Trang thai sau hanh dong
+                Trạng thái sau hành động
               </span>
               <span className="flex items-center gap-2 font-bold text-sm text-[#0f172a]">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#8a6d4d]" />
-                Dang cho thanh toan
+                Đang chờ thanh toán
               </span>
             </div>
 
@@ -216,7 +215,7 @@ const RecordBill = () => {
               disabled={isSubmitting || loadingInvoices || invoices.length === 0}
               className="bg-[#0f172a] text-white font-bold py-4 px-10 rounded-full hover:bg-black transition-colors flex items-center gap-2 text-sm disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Dang luu...' : 'Luu va Hoan tat'}
+              {isSubmitting ? 'Đang lưu...' : 'Lưu và Hoàn tất'}
               <span className="text-xs">{'->'}</span>
             </button>
           </div>

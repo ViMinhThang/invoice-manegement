@@ -1,4 +1,4 @@
-package com.invoice.demo.invoice.entity;
+package com.invoice.demo.purchaseRequest.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,13 +17,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "invoices")
+@Table(name = "purchase_requests")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Invoice {
+public class PurchaseRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -49,6 +49,6 @@ public class Invoice {
     @Column(nullable = false, updatable = false)
     private Instant issuedAt;
 
-    @OneToOne(mappedBy = "invoice")
+    @OneToOne(mappedBy = "purchaseRequest")
     private Bill bill;
 }

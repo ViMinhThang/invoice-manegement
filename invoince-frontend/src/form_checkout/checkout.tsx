@@ -20,17 +20,17 @@ const ItemDetailsForm = () => {
 
   const handleSave = async () => {
     if (!vendorName.trim()) {
-      alert('Vui long nhap ten nha cung cap!')
+      alert('Vui lòng nhập tên nhà cung cấp!')
       return
     }
 
     if (!itemName.trim()) {
-      alert('Vui long nhap ten mat hang!')
+      alert('Vui lòng nhập tên mặt hàng!')
       return
     }
 
     if (quantity <= 0) {
-      alert('So luong phai lon hon 0!')
+      alert('Số lượng phải lớn hơn 0!')
       return
     }
 
@@ -44,7 +44,7 @@ const ItemDetailsForm = () => {
       })
 
       const numericPrice = Number(price.replace(/,/g, ''))
-      console.log('Da luu:', {
+      console.log('Đã lưu:', {
         vendorName,
         itemName,
         quantity,
@@ -55,7 +55,7 @@ const ItemDetailsForm = () => {
 
       navigate('/payments')
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Luu that bai'
+      const message = error instanceof Error ? error.message : 'Lưu thất bại'
       alert(message)
     } finally {
       setIsSubmitting(false)
@@ -66,17 +66,17 @@ const ItemDetailsForm = () => {
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="max-w-xl w-full p-8 bg-white rounded-xl shadow-lg font-sans text-gray-700">
         <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center uppercase tracking-tight">
-          Chi tiet mat hang
+          Chi tiết mặt hàng
         </h2>
 
         <div className="space-y-6">
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-              Ten nha cung cap
+              Tên nhà cung cấp
             </label>
             <input
               type="text"
-              placeholder="Nhap ten cong ty, dai ly..."
+              placeholder="Nhập tên công ty, đại lý..."
               className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
               value={vendorName}
               onChange={(e) => setVendorName(e.target.value)}
@@ -85,11 +85,11 @@ const ItemDetailsForm = () => {
 
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-              Ten mon hang
+              Tên món hàng
             </label>
             <input
               type="text"
-              placeholder="Nhap ten mat hang..."
+              placeholder="Nhập tên mặt hàng..."
               className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
               value={itemName}
               onChange={(e) => setItemName(e.target.value)}
@@ -99,7 +99,7 @@ const ItemDetailsForm = () => {
           <div className="flex gap-4">
             <div className="flex-1">
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                So luong
+                Số lượng
               </label>
               <input
                 type="number"
@@ -112,7 +112,7 @@ const ItemDetailsForm = () => {
 
             <div className="flex-1">
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                Don vi
+                Đơn vị
               </label>
               <div className="relative">
                 <select
@@ -120,10 +120,10 @@ const ItemDetailsForm = () => {
                   value={unit}
                   onChange={(e) => setUnit(e.target.value)}
                 >
-                  <option value="Cai">Cai</option>
+                  <option value="Cai">Cái</option>
                   <option value="KG">KG</option>
-                  <option value="Bo">Bo</option>
-                  <option value="Chiec">Chiec</option>
+                  <option value="Bo">Bộ</option>
+                  <option value="Chiec">Chiếc</option>
                 </select>
                 <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
                   <ChevronDown size={18} />
@@ -134,7 +134,7 @@ const ItemDetailsForm = () => {
 
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-              Gia don vi
+              Giá đơn vị
             </label>
             <div className="relative">
               <input
@@ -159,7 +159,7 @@ const ItemDetailsForm = () => {
               onChange={(e) => setNeedsDeposit(e.target.checked)}
             />
             <label htmlFor="deposit" className="font-medium text-gray-600 cursor-pointer select-none">
-              Xac nhan dat coc
+              Xác nhận đặt cọc
             </label>
           </div>
 
@@ -170,7 +170,7 @@ const ItemDetailsForm = () => {
               style={{ backgroundColor: '#4B6382' }}
               className="w-full py-4 text-white font-black text-lg rounded-xl transition-all shadow-lg active:scale-[0.98] hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Dang luu...' : 'LUU THONG TIN'}
+              {isSubmitting ? 'Đang lưu...' : 'LƯU THÔNG TIN'}
             </button>
           </div>
         </div>
