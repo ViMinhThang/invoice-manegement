@@ -9,15 +9,28 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
 public class InvoiceService {
+    public static final String STATUS_OPEN = "Open";
+    public static final String STATUS_AWAITING_PAYMENT = "Awaiting Payment";
+    public static final String STATUS_COMPLETED_INVOICED = "Completed/Invoiced";
+
     private final InvoiceRepository invoiceRepository;
 
     public List<InvoiceResponse> getAllInvoices() {
         return invoiceRepository.findAll().stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public List<InvoiceResponse> getAwaitingPaymentInvoices() {
+        return invoiceRepository.findByStatusOrderByIssuedAtDesc(STATUS_AWAITING_PAYMENT).stream()
                 .map(this::toResponse)
                 .toList();
     }
@@ -28,7 +41,9 @@ public class InvoiceService {
                 .invoiceNumber(generateInvoiceNumber())
                 .customerName(request.itemName())
                 .totalAmount(request.quantity())
-                .status("Open")
+                .unit(request.unit())
+                .requiresDeposit(request.requiresDeposit())
+                .status(STATUS_OPEN)
                 .issuedAt(now)
                 .build();
 
@@ -42,6 +57,23 @@ public class InvoiceService {
                 savedInvoice.getStatus(),
                 now
         );
+    }
+
+    @Transactional
+    public InvoiceResponse confirmPaid(Long invoiceId) {
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
+
+        if (!STATUS_AWAITING_PAYMENT.equals(invoice.getStatus())) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Only invoices in Awaiting Payment status can be confirmed as paid"
+            );
+        }
+
+        invoice.setStatus(STATUS_COMPLETED_INVOICED);
+        Invoice updated = invoiceRepository.save(invoice);
+        return toResponse(updated);
     }
 
     private InvoiceResponse toResponse(Invoice invoice) {

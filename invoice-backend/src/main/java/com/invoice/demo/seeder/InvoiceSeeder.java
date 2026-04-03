@@ -8,10 +8,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Order(1)
 public class InvoiceSeeder implements CommandLineRunner {
     private final InvoiceRepository invoiceRepository;
 
@@ -41,6 +43,8 @@ public class InvoiceSeeder implements CommandLineRunner {
                 .invoiceNumber(invoiceNumber)
                 .customerName(customerName)
                 .totalAmount(new BigDecimal(amount))
+                .unit("Cai")
+                .requiresDeposit(false)
                 .status(status)
                 .issuedAt(issuedAt)
                 .build();

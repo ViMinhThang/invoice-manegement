@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
-import { useLocation } from 'react-router-dom'
-import { getApiMode, getInvoices } from '../api/purchaseRequestApi'
-import type { InvoiceItem } from '../mocks/purchaseRequestMockApi'
+import { confirmPaid, getApiMode, getBills } from '../api/purchaseRequestApi'
+import type { BillItem } from '../mocks/purchaseRequestMockApi'
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
@@ -14,53 +13,56 @@ const formatDate = (isoDate: string) =>
     day: '2-digit',
   })
 
-const sortInvoicesNewestFirst = (items: InvoiceItem[]) =>
-  [...items].sort((a, b) => {
-    const aTime = new Date(a.issuedAt).getTime()
-    const bTime = new Date(b.issuedAt).getTime()
-    if (aTime !== bTime) return bTime - aTime
-    return b.id - a.id
-  })
-
 const PaymentQueue = () => {
-  const location = useLocation()
-  const [payments, setPayments] = useState<InvoiceItem[]>([])
+  const [payments, setPayments] = useState<BillItem[]>([])
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
-  const newlyCreatedInvoice = (location.state as { newlyCreatedInvoice?: InvoiceItem } | null)
-    ?.newlyCreatedInvoice
+  const [confirmingInvoiceIds, setConfirmingInvoiceIds] = useState<number[]>([])
 
   useEffect(() => {
-    const fetchInvoices = async () => {
+    const fetchBills = async () => {
       setLoading(true)
       setErrorMessage('')
       try {
-        const data = await getInvoices()
-        const merged =
-          newlyCreatedInvoice && !data.some((item) => item.id === newlyCreatedInvoice.id)
-            ? [newlyCreatedInvoice, ...data]
-            : data
-
-        setPayments(sortInvoicesNewestFirst(merged))
+        const data = await getBills()
+        setPayments(data)
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : 'Cannot load invoices. Please try again.'
+        const message = error instanceof Error ? error.message : 'Cannot load bills. Please try again.'
         setErrorMessage(message)
       } finally {
         setLoading(false)
       }
     }
 
-    void fetchInvoices()
-  }, [newlyCreatedInvoice])
+    void fetchBills()
+  }, [])
+
+  const handleConfirmPaid = async (invoiceId: number) => {
+    setErrorMessage('')
+    setConfirmingInvoiceIds((prev) => [...prev, invoiceId])
+
+    try {
+      const result = await confirmPaid(invoiceId)
+      setPayments((prev) =>
+        prev.map((item) =>
+          item.invoiceId === invoiceId ? { ...item, invoiceStatus: result.status } : item,
+        ),
+      )
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Cannot confirm paid. Please try again.'
+      setErrorMessage(message)
+    } finally {
+      setConfirmingInvoiceIds((prev) => prev.filter((id) => id !== invoiceId))
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#d1d9e2] p-8 font-sans text-[#1a2b4b]">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-end mb-8">
           <div>
-            <h1 className="text-2xl font-bold mb-1">Payment Queue</h1>
-            <p className="text-gray-600 text-sm">Invoice list from API mode: {getApiMode()}</p>
+            <h1 className="text-2xl font-bold mb-1">Hoa don thanh toan</h1>
+            <p className="text-gray-600 text-sm">Bill list from API mode: {getApiMode()}</p>
           </div>
 
           <div className="flex gap-3">
@@ -70,18 +72,18 @@ const PaymentQueue = () => {
           </div>
         </div>
 
-        {loading && <p className="rounded-md bg-white/70 px-4 py-3 text-sm">Loading invoices...</p>}
+        {loading && <p className="rounded-md bg-white/70 px-4 py-3 text-sm">Loading bills...</p>}
         {errorMessage && <p className="rounded-md bg-red-100 px-4 py-3 text-sm text-red-700">{errorMessage}</p>}
 
         {!loading && !errorMessage && (
           <>
             <div className="grid grid-cols-12 px-6 mb-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-              <div className="col-span-2">Reference ID</div>
-              <div className="col-span-3">Client Entity</div>
-              <div className="col-span-2 text-center">Amount</div>
-              <div className="col-span-2 text-center">Issued At</div>
-              <div className="col-span-2 text-center">Status</div>
-              <div className="col-span-1 text-right">Actions</div>
+              <div className="col-span-2">Ma giao dich</div>
+              <div className="col-span-3">Khach hang</div>
+              <div className="col-span-2 text-center">Tong tien</div>
+              <div className="col-span-2 text-center">Han thanh toan</div>
+              <div className="col-span-2 text-center">Trang thai</div>
+              <div className="col-span-1 text-right">Xac nhan</div>
             </div>
 
             <div className="space-y-4">
@@ -96,16 +98,23 @@ const PaymentQueue = () => {
                     {formatCurrency(item.totalAmount)}
                   </div>
                   <div className="col-span-2 text-center text-sm font-medium">
-                    {formatDate(item.issuedAt)}
+                    {formatDate(item.deadline)}
                   </div>
                   <div className="col-span-2 flex justify-center">
                     <span className="px-3 py-1 rounded-full text-[10px] font-black tracking-tighter bg-[#ced7e0] text-[#6b7c93]">
-                      {item.status.toUpperCase()}
+                      {item.invoiceStatus.toUpperCase()}
                     </span>
                   </div>
                   <div className="col-span-1 text-right">
-                    <button className="bg-[#0f172a] text-white text-[10px] font-bold py-2 px-3 rounded leading-tight hover:bg-black transition-colors uppercase">
-                      Confirm
+                    <button
+                      disabled={
+                        item.invoiceStatus !== 'Awaiting Payment' ||
+                        confirmingInvoiceIds.includes(item.invoiceId)
+                      }
+                      onClick={() => handleConfirmPaid(item.invoiceId)}
+                      className="bg-[#0f172a] text-white text-[10px] font-bold py-2 px-3 rounded leading-tight hover:bg-black transition-colors uppercase disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {confirmingInvoiceIds.includes(item.invoiceId) ? 'Confirming...' : 'Confirm'}
                     </button>
                   </div>
                 </div>

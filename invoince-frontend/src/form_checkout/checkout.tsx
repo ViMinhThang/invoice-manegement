@@ -1,105 +1,94 @@
-import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import { createInvoice } from '../api/purchaseRequestApi'
+import { useState } from 'react';
+import { ChevronDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-const INVOICE_STATUSES = ['Open', 'Paid', 'Overdue'] as const
+const ItemDetailsForm = () => {
+  const navigate = useNavigate();
+  const [itemName, setItemName] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [unit, setUnit] = useState('Cái');
+  const [price, setPrice] = useState('');
+  const [needsDeposit, setNeedsDeposit] = useState(false);
 
-const CheckoutForm = () => {
-  const navigate = useNavigate()
-  const [customerName, setCustomerName] = useState('')
-  const [totalAmount, setTotalAmount] = useState<string>('')
-  const [status, setStatus] = useState<(typeof INVOICE_STATUSES)[number]>('Open')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
+  // Hàm định dạng số: 1000 -> 1,000
+  const formatNumber = (value: string) => {
+    // Xóa tất cả ký tự không phải là số
+    const cleanValue = value.replace(/\D/g, '');
+    // Thêm dấu phẩy phân cách hàng nghìn
+    return cleanValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
 
-  const handleSave = async () => {
-    setErrorMessage('')
-    const normalizedCustomerName = customerName.trim()
-    const parsedAmount = Number(totalAmount)
-
-    if (!normalizedCustomerName) {
-      setErrorMessage('Customer name is required.')
-      return
+  const handleSave = () => {
+    if (!itemName) {
+      alert("Vui lòng nhập tên mặt hàng!");
+      return;
     }
 
-    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-      setErrorMessage('Total amount must be greater than 0.')
-      return
-    }
+    // Chuyển ngược từ chuỗi có dấu phẩy về số thuần túy để lưu trữ
+    const numericPrice = Number(price.replace(/,/g, ''));
 
-    setIsSubmitting(true)
-    try {
-      const createdInvoice = await createInvoice({
-        customerName: normalizedCustomerName,
-        totalAmount: parsedAmount,
-        status,
-      })
-      navigate('/payments', { state: { newlyCreatedInvoice: createdInvoice } })
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Cannot create invoice. Please try again.'
-      setErrorMessage(message)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+    console.log("Đã lưu:", { 
+      itemName, 
+      quantity, 
+      unit, 
+      price: numericPrice, 
+      needsDeposit 
+    });
+
+    navigate('/payments');
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="max-w-xl w-full p-8 bg-white rounded-xl shadow-lg font-sans text-gray-700">
-        <button onClick={() => navigate('/payments')} className="mb-4 text-xs text-blue-500 hover:underline">
-          &larr; Back to payment queue
-        </button>
+        
 
         <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center uppercase tracking-tight">
-          Create Invoice
+          Chi tiết mặt hàng
         </h2>
 
         <div className="space-y-6">
+          {/* Tên món hàng */}
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-              Customer Name
+              Tên món hàng
             </label>
             <input
               type="text"
-              placeholder="Enter customer name..."
-              className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all text-gray-700"
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
+              placeholder="Nhập tên mặt hàng..."
+              className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+              value={itemName}
+              onChange={(e) => setItemName(e.target.value)}
             />
           </div>
 
+          {/* Số lượng và Đơn vị */}
           <div className="flex gap-4">
             <div className="flex-1">
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                Total Amount
+                Số lượng
               </label>
               <input
                 type="number"
-                min="0.01"
-                step="0.01"
-                placeholder="0.00"
-                className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all text-gray-700"
-                value={totalAmount}
-                onChange={(e) => setTotalAmount(e.target.value)}
+                min="1"
+                className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
               />
             </div>
 
             <div className="flex-1">
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                Status
+                Đơn vị
               </label>
               <div className="relative">
                 <select
-                  className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all appearance-none cursor-pointer"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value as (typeof INVOICE_STATUSES)[number])}
+                  className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer"
+                  value={unit}
+                  onChange={(e) => setUnit(e.target.value)}
                 >
-                  {INVOICE_STATUSES.map((invoiceStatus) => (
-                    <option key={invoiceStatus} value={invoiceStatus}>
-                      {invoiceStatus}
-                    </option>
-                  ))}
+                  <option value="Cái">Cái</option>
+                  <option value="KG">KG</option>
                 </select>
                 <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
                   <ChevronDown size={18} />
@@ -108,22 +97,56 @@ const CheckoutForm = () => {
             </div>
           </div>
 
-          {errorMessage && <p className="rounded-md bg-red-100 px-4 py-3 text-sm text-red-700">{errorMessage}</p>}
+          {/* Ô NHẬP GIÁ VỚI DẤU PHẨY TỰ ĐỘNG */}
+          <div>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+              Giá đơn vị
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="0"
+                className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all text-gray-700 font-medium"
+                value={price}
+                onChange={(e) => {
+                  const formatted = formatNumber(e.target.value);
+                  setPrice(formatted);
+                }}
+              />
+              <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400 font-bold text-xs">
+                VND
+              </div>
+            </div>
+          </div>
 
+          {/* Checkbox */}
+          <div className="flex items-center gap-3 py-2">
+            <input
+              type="checkbox"
+              id="deposit"
+              className="w-5 h-5 accent-blue-600 border-gray-300 rounded cursor-pointer"
+              checked={needsDeposit}
+              onChange={(e) => setNeedsDeposit(e.target.checked)}
+            />
+            <label htmlFor="deposit" className="font-medium text-gray-600 cursor-pointer select-none">
+              Xác nhận đặt cọc
+            </label>
+          </div>
+
+          {/* Nút Lưu */}
           <div className="pt-4">
             <button
               onClick={handleSave}
-              disabled={isSubmitting}
               style={{ backgroundColor: '#4B6382' }}
-              className="w-full py-4 text-white font-black text-lg rounded-xl transition-all shadow-lg active:scale-[0.98] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+              className="w-full py-4 text-white font-black text-lg rounded-xl transition-all shadow-lg active:scale-[0.98] hover:opacity-90"
             >
-              {isSubmitting ? 'Saving...' : 'SAVE INVOICE'}
+              LƯU THÔNG TIN
             </button>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CheckoutForm
+export default ItemDetailsForm;
