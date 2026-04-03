@@ -1,13 +1,13 @@
-package com.invoice.demo.purchaserequest;
+package com.invoice.demo.invoice;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.invoice.demo.purchaserequest.entity.PurchaseRequest;
-import com.invoice.demo.purchaserequest.entity.PurchaseRequestStatus;
-import com.invoice.demo.purchaserequest.repository.PurchaseRequestRepository;
+import com.invoice.demo.invoice.entity.Invoice;
+import com.invoice.demo.invoice.repository.InvoiceRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,20 +20,20 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class PurchaseRequestControllerTest {
+class InvoiceControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private PurchaseRequestRepository purchaseRequestRepository;
+    private InvoiceRepository invoiceRepository;
 
     @BeforeEach
     void setUp() {
-        purchaseRequestRepository.deleteAll();
+        invoiceRepository.deleteAll();
     }
 
     @Test
-    void createPurchaseRequest_shouldPersistWithOpenStatus() throws Exception {
+    void createViaPurchaseRequestPath_shouldPersistIntoInvoicesTable() throws Exception {
         String requestBody = """
                 {
                   "itemName": "Laptop",
@@ -48,13 +48,28 @@ class PurchaseRequestControllerTest {
                         .content(requestBody))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.itemName").value("Laptop"))
-                .andExpect(jsonPath("$.unit").value("Cai"))
-                .andExpect(jsonPath("$.requiresDeposit").value(true))
                 .andExpect(jsonPath("$.status").value("Open"));
 
-        List<PurchaseRequest> savedRequests = purchaseRequestRepository.findAll();
-        assertThat(savedRequests).hasSize(1);
-        assertThat(savedRequests.get(0).getStatus()).isEqualTo(PurchaseRequestStatus.OPEN);
-        assertThat(savedRequests.get(0).getQuantity()).isEqualByComparingTo(new BigDecimal("2.00"));
+        List<Invoice> savedInvoices = invoiceRepository.findAll();
+        assertThat(savedInvoices).hasSize(1);
+        assertThat(savedInvoices.get(0).getCustomerName()).isEqualTo("Laptop");
+        assertThat(savedInvoices.get(0).getTotalAmount()).isEqualByComparingTo(new BigDecimal("2.00"));
+        assertThat(savedInvoices.get(0).getStatus()).isEqualTo("Open");
+    }
+
+    @Test
+    void getInvoices_shouldReadFromInvoicesTable() throws Exception {
+        invoiceRepository.save(Invoice.builder()
+                .invoiceNumber("INV-TEST000001")
+                .customerName("Seed Customer")
+                .totalAmount(new BigDecimal("10.00"))
+                .status("Open")
+                .issuedAt(java.time.Instant.now())
+                .build());
+
+        mockMvc.perform(get("/api/invoices"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].invoiceNumber").value("INV-TEST000001"))
+                .andExpect(jsonPath("$[0].customerName").value("Seed Customer"));
     }
 }
