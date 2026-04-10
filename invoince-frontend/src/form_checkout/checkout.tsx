@@ -65,7 +65,7 @@ const ItemDetailsForm = () => {
   return (
     <div className="min-h-screen bg-[#d1d9e2] flex items-center justify-center p-4">
       <div className="max-w-xl w-full"> 
-    <h1 className="text-2xl font-black text-[#0f172a] mb-6 text-left uppercase tracking-tight">
+    <h1 className="text-2xl font-black text-[#0f172a] mb-6 text-center uppercase tracking-tight">
       Chi tiết mặt hàng
     </h1>
       <div className="max-w-xl w-full p-8 bg-[#aeb9c7] rounded-xl shadow-lg font-sans text-gray-700">

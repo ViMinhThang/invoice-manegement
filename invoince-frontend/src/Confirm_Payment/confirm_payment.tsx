@@ -130,13 +130,10 @@ const PaymentQueue = () => {
   return (
     <div className="min-h-screen bg-[#d1d9e2] p-8 font-sans text-[#1a2b4b]">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-end mb-8">
+        <div className="flex justify-center items-end mb-8">
           <div>
-            <h1 className="text-3xl font-black mb-1 tracking-tighter uppercase">Hóa đơn thanh toán</h1>
-            
+            <h1 className="text-3xl font-black mb-1 text-center tracking-tighter uppercase">Hóa đơn thanh toán</h1>
           </div>
-
-         
         </div>
 
         {loading && <div className="bg-white/50 p-4 rounded-xl animate-pulse text-center">Đang tải dữ liệu...</div>}
