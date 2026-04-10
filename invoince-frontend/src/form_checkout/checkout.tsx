@@ -63,34 +63,34 @@ const ItemDetailsForm = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="max-w-xl w-full p-8 bg-white rounded-xl shadow-lg font-sans text-gray-700">
-        <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center uppercase tracking-tight">
+    <div className="min-h-screen bg-[#d1d9e2] flex items-center justify-center p-4">
+      <div className="max-w-xl w-full p-8 bg-[#aeb9c7] rounded-xl shadow-lg font-sans text-gray-700">
+        <h2 className="text-2xl font-black text-[#0f172a] mb-8 text-center uppercase tracking-tight">
           Chi tiết mặt hàng
         </h2>
 
         <div className="space-y-6">
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-[#6a7282] uppercase tracking-wider mb-2">
               Tên nhà cung cấp
             </label>
             <input
               type="text"
               placeholder="Nhập tên công ty, đại lý..."
-              className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+              className="w-full p-3 bg-white border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
               value={vendorName}
               onChange={(e) => setVendorName(e.target.value)}
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-[#6a7282] uppercase tracking-wider mb-2">
               Tên món hàng
             </label>
             <input
               type="text"
               placeholder="Nhập tên mặt hàng..."
-              className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+              className="w-full p-3 bg-white border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
               value={itemName}
               onChange={(e) => setItemName(e.target.value)}
             />
@@ -98,25 +98,25 @@ const ItemDetailsForm = () => {
 
           <div className="flex gap-4">
             <div className="flex-1">
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-[#6a7282] uppercase tracking-wider mb-2">
                 Số lượng
               </label>
               <input
                 type="number"
                 min="1"
-                className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+                className="w-full p-3 bg-white border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
                 value={quantity}
                 onChange={(e) => setQuantity(Number(e.target.value))}
               />
             </div>
 
             <div className="flex-1">
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-[#6a7282] uppercase tracking-wider mb-2">
                 Đơn vị
               </label>
               <div className="relative">
                 <select
-                  className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer"
+                  className="w-full p-3 bg-white border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer"
                   value={unit}
                   onChange={(e) => setUnit(e.target.value)}
                 >
@@ -133,14 +133,14 @@ const ItemDetailsForm = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-[#6a7282] uppercase tracking-wider mb-2">
               Giá đơn vị
             </label>
             <div className="relative">
               <input
                 type="text"
                 placeholder="0"
-                className="w-full p-3 bg-blue-50/50 border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all text-gray-700 font-medium"
+                className="w-full p-3 bg-white border border-blue-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all text-gray-700 font-medium"
                 value={price}
                 onChange={(e) => setPrice(formatNumber(e.target.value))}
               />
@@ -167,7 +167,7 @@ const ItemDetailsForm = () => {
             <button
               onClick={handleSave}
               disabled={isSubmitting}
-              style={{ backgroundColor: '#4B6382' }}
+              style={{ backgroundColor: '#0F172A' }}
               className="w-full py-4 text-white font-black text-lg rounded-xl transition-all shadow-lg active:scale-[0.98] hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Đang lưu...' : 'LƯU THÔNG TIN'}
