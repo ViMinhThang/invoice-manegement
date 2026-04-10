@@ -53,7 +53,7 @@ const ItemDetailsForm = () => {
         needsDeposit,
       })
 
-      navigate('/payments')
+      navigate('/record-bill')
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Lưu thất bại'
       alert(message)
