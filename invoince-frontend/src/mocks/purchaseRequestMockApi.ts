@@ -3,6 +3,7 @@ export type CreatePurchaseRequestPayload = {
   quantity: number
   unit: string
   requiresDeposit: boolean
+  supplierName?: string
 }
 
 export type PurchaseRequestResponse = {
@@ -118,7 +119,7 @@ export const mockCreatePurchaseRequest = async (
   mockInvoices.unshift({
     id: invoiceId,
     invoiceNumber: `INV-MOCK${String(invoiceId).padStart(4, '0')}`,
-    customerName: payload.itemName.trim(),
+    customerName: payload.supplierName?.trim() || payload.itemName.trim(),
     totalAmount: payload.quantity,
     status: 'Open',
     issuedAt: now,

@@ -18,6 +18,10 @@ const ItemDetailsForm = () => {
     return cleanValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
   }
 
+  const numericPrice = Number(price.replace(/,/g, ''))
+  const liveUnitPrice = Number.isFinite(numericPrice) ? numericPrice : 0
+  const liveTotalAmount = quantity > 0 ? quantity * liveUnitPrice : 0
+
   const handleSave = async () => {
     if (!vendorName.trim()) {
       alert('Vui lòng nhập tên nhà cung cấp!')
@@ -34,22 +38,30 @@ const ItemDetailsForm = () => {
       return
     }
 
+    if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
+      alert('Giá đơn vị phải lớn hơn 0!')
+      return
+    }
+
+    const totalAmount = quantity * numericPrice
+
     try {
       setIsSubmitting(true)
       await createInvoice({
         itemName: itemName.trim(),
-        quantity,
+        quantity: totalAmount,
         unit,
         requiresDeposit: needsDeposit,
+        supplierName: vendorName.trim(),
       })
 
-      const numericPrice = Number(price.replace(/,/g, ''))
       console.log('Đã lưu:', {
         vendorName,
         itemName,
         quantity,
         unit,
-        price: Number.isFinite(numericPrice) ? numericPrice : 0,
+        price: numericPrice,
+        totalAmount,
         needsDeposit,
       })
 
@@ -146,6 +158,14 @@ const ItemDetailsForm = () => {
               />
               <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400 font-bold text-xs">
                 VND
+              </div>
+            </div>
+            <div className="mt-3 rounded-md border border-blue-100 bg-blue-50/40 px-4 py-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-semibold text-gray-500 uppercase tracking-wide">Tổng cộng</span>
+                <span className="text-lg font-extrabold text-gray-800">
+                  {liveTotalAmount.toLocaleString('vi-VN')} VND
+                </span>
               </div>
             </div>
           </div>
