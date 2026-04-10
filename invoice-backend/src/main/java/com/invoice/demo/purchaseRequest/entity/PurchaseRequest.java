@@ -32,7 +32,7 @@ public class PurchaseRequest {
     private String invoiceNumber;
 
     @Column(nullable = false)
-    private String customerName;
+    private String supplierName;
 
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal totalAmount;

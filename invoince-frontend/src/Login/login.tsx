@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+﻿import React, { useState } from 'react'
 import { Eye, EyeOff, Lock, User, ArrowRight } from 'lucide-react'
 import { ACCESS_TOKEN_KEY, loginApi } from '../api/authApi'
 
@@ -94,17 +94,21 @@ const Login = () => {
               {isSubmitting ? 'SIGNING IN...' : 'SIGN IN'}
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </button>
-            
+
             <div className="text-center">
-            <p className="text-sm text-gray-500 font-medium">
-              Chưa có tài khoản?{' '}
-              <button 
-                type="button"
-                onClick={() => navigate('/register')} 
-                className="text-[#0f172a] font-extrabold hover:underline cursor-pointer">Đăng ký 
-              </button>
-            </p>
-          </div>
+              <p className="text-sm text-gray-500 font-medium">
+                Chua co tai khoan?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.location.href = '/register'
+                  }}
+                  className="text-[#0f172a] font-extrabold hover:underline cursor-pointer"
+                >
+                  Dang ky
+                </button>
+              </p>
+            </div>
           </form>
         </div>
       </div>

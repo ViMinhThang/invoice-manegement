@@ -1,54 +1,49 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Lock, User, Mail, ArrowRight } from 'lucide-react';
+﻿import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Eye, EyeOff, Lock, User, Mail, ArrowRight } from 'lucide-react'
+import { ACCESS_TOKEN_KEY, registerApi } from '../api/authApi'
 
 const Register = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
 
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault()
 
     if (password !== confirmPassword) {
-      alert('Mật khẩu không khớp!');
-      return;
+      alert('Mật khẩu không khớp!')
+      return
     }
 
-    console.log('Register:', { name, email, password });
-
-    // Giả lập đăng ký thành công
-    navigate('/login');
-  };
+    try {
+      const result = await registerApi({ fullName: name, email, password })
+      localStorage.setItem(ACCESS_TOKEN_KEY, result.accessToken)
+      window.location.href = '/invoices'
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Đăng ký thất bại')
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#d1d9e2] flex items-center justify-center p-4 font-sans text-[#1a2b4b]">
       <div className="max-w-md w-full">
-
-        {/* Header */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-[#0a1931] text-[#e5c49e] rounded-2xl mb-4 shadow-xl">
             <User size={32} />
           </div>
-          <h1 className="text-4xl font-black text-[#0f172a] tracking-tighter uppercase">
-            Đăng ký tài khoản
-          </h1>
-          <p className="text-gray-600 mt-2 font-medium">
-            Tạo tài khoản để sử dụng hệ thống
-          </p>
+          <h1 className="text-4xl font-black text-[#0f172a] tracking-tighter uppercase">Đăng ký tài khoản</h1>
+          <p className="text-gray-600 mt-2 font-medium">Tạo tài khoản để sử dụng hệ thống</p>
         </div>
 
-        {/* Card */}
         <div className="bg-[#aeb9c7] p-8 rounded-3xl shadow-sm border border-white/20">
           <form onSubmit={handleRegister} className="space-y-6">
-
-            {/* Name */}
             <div>
               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2 ml-1">
                 Họ và tên
@@ -68,7 +63,6 @@ const Register = () => {
               </div>
             </div>
 
-            {/* Email */}
             <div>
               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2 ml-1">
                 Email
@@ -88,7 +82,6 @@ const Register = () => {
               </div>
             </div>
 
-            {/* Password */}
             <div>
               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2 ml-1">
                 Mật khẩu
@@ -115,7 +108,6 @@ const Register = () => {
               </div>
             </div>
 
-            {/* Confirm Password */}
             <div>
               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2 ml-1">
                 Nhập lại mật khẩu
@@ -142,7 +134,6 @@ const Register = () => {
               </div>
             </div>
 
-            {/* Button */}
             <button
               type="submit"
               className="w-full bg-[#0f172a] text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-black transition-all flex items-center justify-center gap-2 group"
@@ -153,7 +144,6 @@ const Register = () => {
           </form>
         </div>
 
-        {/* Footer */}
         <p className="text-center text-gray-500 text-xs mt-8 font-medium">
           Đã có tài khoản?{' '}
           <span
@@ -165,7 +155,7 @@ const Register = () => {
         </p>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Register;
+export default Register
