@@ -62,14 +62,12 @@ public class BillController {
             @RequestParam @NotNull Long invoiceId,
             @RequestParam @NotNull @DecimalMin(value = "0.01", message = "Total amount must be greater than 0") BigDecimal totalAmount,
             @RequestParam @NotBlank String deadline,
-            @RequestPart(value = "file", required = false) MultipartFile file
-    ) {
+            @RequestPart(value = "file", required = false) MultipartFile file) {
         CreateBillRequest request = new CreateBillRequest(
                 invoiceId,
                 totalAmount,
                 parseDeadline(deadline),
-                file == null ? null : file.getOriginalFilename()
-        );
+                file == null ? null : file.getOriginalFilename());
         return billService.create(request, file);
     }
 
