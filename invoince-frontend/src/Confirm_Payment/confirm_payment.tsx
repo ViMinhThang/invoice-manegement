@@ -13,6 +13,8 @@ const formatDate = (isoDate: string) =>
     day: '2-digit',
   })
 
+const USER_ROLE_KEY = 'userRole'
+
 const PaymentQueue = () => {
   const [payments, setPayments] = useState<BillItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -24,6 +26,8 @@ const PaymentQueue = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<BillItem | null>(null)
   const [savingEdit, setSavingEdit] = useState(false)
+  const userRole = localStorage.getItem(USER_ROLE_KEY)
+  const isAdmin = userRole === 'ADMIN'
 
   const fetchBills = async () => {
     setLoading(true)
@@ -44,6 +48,10 @@ const PaymentQueue = () => {
   }, [])
 
   const handleConfirmPaid = async (invoiceId: number) => {
+    if (!isAdmin) {
+      setErrorMessage('Bạn không có quyền confirm thanh toán.')
+      return
+    }
     setErrorMessage('')
     setConfirmingInvoiceIds((prev) => [...prev, invoiceId])
 
@@ -181,10 +189,12 @@ const PaymentQueue = () => {
                     <button
                       onClick={() => handleConfirmPaid(item.invoiceId)}
                       disabled={
+                        !isAdmin ||
                         item.invoiceStatus !== 'Awaiting Payment' ||
                         confirmingInvoiceIds.includes(item.invoiceId)
                       }
                       className="bg-[#0f172a] text-white text-[10px] font-bold py-2 px-4 rounded-lg hover:bg-black transition-colors uppercase cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                      title={isAdmin ? 'Confirm thanh toán' : 'Chỉ ADMIN mới có quyền confirm'}
                     >
                       {confirmingInvoiceIds.includes(item.invoiceId) ? 'Đang confirm...' : 'Confirm'}
                     </button>
@@ -252,7 +262,8 @@ const PaymentQueue = () => {
                   <select
                     value={editingItem.invoiceStatus}
                     onChange={(e) => setEditingItem({ ...editingItem, invoiceStatus: e.target.value })}
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none appearance-none font-semibold cursor-pointer"
+                    disabled={!isAdmin}
+                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none appearance-none font-semibold cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     <option value="Awaiting Payment">Awaiting Payment (Chờ duyệt)</option>
                     <option value="Completed/Invoiced">Completed/Invoiced (Đã thanh toán)</option>
@@ -260,6 +271,9 @@ const PaymentQueue = () => {
                   </select>
                   <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
                 </div>
+                {!isAdmin && (
+                  <p className="mt-2 text-xs text-amber-700">Chỉ ADMIN mới có quyền chỉnh sửa trạng thái.</p>
+                )}
               </div>
             </div>
 

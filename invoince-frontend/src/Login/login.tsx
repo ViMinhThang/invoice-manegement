@@ -1,18 +1,20 @@
 ﻿import React, { useState } from 'react'
 import { Eye, EyeOff, Lock, User, ArrowRight } from 'lucide-react'
-import { ACCESS_TOKEN_KEY, loginApi } from '../api/authApi'
+import { ACCESS_TOKEN_KEY, USER_ROLE_KEY, loginApi } from '../api/authApi'
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    setErrorMessage('')
 
     if (!email.trim() || !password.trim()) {
-      alert('Missing email or password')
+      setErrorMessage('Vui lòng nhập email và mật khẩu.')
       return
     }
 
@@ -23,10 +25,11 @@ const Login = () => {
         password,
       })
       localStorage.setItem(ACCESS_TOKEN_KEY, result.accessToken)
+      localStorage.setItem(USER_ROLE_KEY, result.user.role)
       window.location.href = '/invoices'
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Login failed'
-      alert(message)
+      setErrorMessage(message)
     } finally {
       setIsSubmitting(false)
     }
@@ -89,15 +92,21 @@ const Login = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-[#0f172a] text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-black hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 group disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full bg-[#0f172a] text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-black hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 group cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'SIGNING IN...' : 'SIGN IN'}
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </button>
 
+            {errorMessage && (
+              <p className="text-xs text-red-700 bg-red-100 border border-red-200 rounded-lg px-3 py-2">
+                {errorMessage}
+              </p>
+            )}
+
             <div className="text-center">
               <p className="text-sm text-gray-500 font-medium">
-                Chua co tai khoan?{' '}
+                Chưa có tài khoản?{' '}
                 <button
                   type="button"
                   onClick={() => {
@@ -105,7 +114,7 @@ const Login = () => {
                   }}
                   className="text-[#0f172a] font-extrabold hover:underline cursor-pointer"
                 >
-                  Dang ky
+                  Đăng ký
                 </button>
               </p>
             </div>
@@ -117,3 +126,4 @@ const Login = () => {
 }
 
 export default Login
+

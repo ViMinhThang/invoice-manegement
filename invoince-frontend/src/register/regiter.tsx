@@ -1,7 +1,7 @@
 ﻿import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Lock, User, Mail, ArrowRight } from 'lucide-react'
-import { ACCESS_TOKEN_KEY, registerApi } from '../api/authApi'
+import { ACCESS_TOKEN_KEY, USER_ROLE_KEY, registerApi } from '../api/authApi'
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false)
@@ -25,6 +25,7 @@ const Register = () => {
     try {
       const result = await registerApi({ fullName: name, email, password })
       localStorage.setItem(ACCESS_TOKEN_KEY, result.accessToken)
+      localStorage.setItem(USER_ROLE_KEY, result.user.role)
       window.location.href = '/invoices'
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Đăng ký thất bại')
@@ -100,6 +101,7 @@ const Register = () => {
                 />
                 <button
                   type="button"
+                  tabIndex={-1}
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-4 flex items-center text-gray-400"
                 >
@@ -126,6 +128,7 @@ const Register = () => {
                 />
                 <button
                   type="button"
+                  tabIndex={-1}
                   onClick={() => setShowConfirm(!showConfirm)}
                   className="absolute inset-y-0 right-4 flex items-center text-gray-400"
                 >
@@ -159,3 +162,4 @@ const Register = () => {
 }
 
 export default Register
+

@@ -14,12 +14,14 @@ type ApiMode = 'real'
 const API_MODE: ApiMode = 'real'
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 const ACCESS_TOKEN_KEY = 'accessToken'
+const USER_ROLE_KEY = 'userRole'
 
 const handleUnauthorized = (status: number): void => {
   if (status !== 401) {
     return
   }
   localStorage.removeItem(ACCESS_TOKEN_KEY)
+  localStorage.removeItem(USER_ROLE_KEY)
   window.location.href = '/login'
 }
 
@@ -288,4 +290,5 @@ export const deleteBill = async (billId: number): Promise<void> => {
 export const updateBill = async (billId: number, payload: UpdateBillPayload): Promise<BillItem> => {
   return updateBillReal(billId, payload)
 }
+
 

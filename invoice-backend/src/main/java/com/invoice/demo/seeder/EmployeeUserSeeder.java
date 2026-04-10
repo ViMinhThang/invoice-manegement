@@ -11,30 +11,30 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-@Order(3)
-public class AdminUserSeeder implements CommandLineRunner {
+@Order(4)
+public class EmployeeUserSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
-        String email = "admin@email.com";
-        String encodedPassword = passwordEncoder.encode("admin123");
+        String email = "employee@email.com";
+        String encodedPassword = passwordEncoder.encode("employee123");
 
-        User adminUser = userRepository.findByEmailIgnoreCase(email)
+        User employeeUser = userRepository.findByEmailIgnoreCase(email)
                 .map(existing -> {
-                    existing.setFullName("Admin");
+                    existing.setFullName("Employee");
                     existing.setPassword(encodedPassword);
-                    existing.setRole(UserRole.ADMIN);
+                    existing.setRole(UserRole.EMPLOYEE);
                     return existing;
                 })
                 .orElseGet(() -> User.builder()
-                        .fullName("Admin")
+                        .fullName("Employee")
                         .email(email)
                         .password(encodedPassword)
-                        .role(UserRole.ADMIN)
+                        .role(UserRole.EMPLOYEE)
                         .build());
 
-        userRepository.save(adminUser);
+        userRepository.save(employeeUser);
     }
 }

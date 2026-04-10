@@ -1,6 +1,7 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 
 export const ACCESS_TOKEN_KEY = 'accessToken'
+export const USER_ROLE_KEY = 'userRole'
 
 type LoginPayload = {
   email: string
@@ -17,6 +18,7 @@ type LoginUser = {
   id: number
   fullName: string
   email: string
+  role: string
 }
 
 type LoginResponse = {
