@@ -43,9 +43,14 @@ public class PurchaseRequestService {
 
     public CreatePurchaseResponse create(CreatePurchaseRequest request) {
         Instant now = Instant.now();
+        String supplierName = request.supplierName();
+        if (supplierName == null || supplierName.isBlank()) {
+            supplierName = request.itemName();
+        }
+
         PurchaseRequest purchaseRequest = PurchaseRequest.builder()
                 .invoiceNumber(generateInvoiceNumber())
-                .supplierName(request.itemName())
+                .supplierName(supplierName.trim())
                 .totalAmount(request.quantity())
                 .unit(request.unit())
                 .requiresDeposit(request.requiresDeposit())
