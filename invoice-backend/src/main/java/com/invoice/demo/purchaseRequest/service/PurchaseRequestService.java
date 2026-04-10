@@ -43,14 +43,20 @@ public class PurchaseRequestService {
 
     public CreatePurchaseResponse create(CreatePurchaseRequest request) {
         Instant now = Instant.now();
+        String itemName = request.itemName() == null ? "" : request.itemName().trim();
+        if (itemName.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Item name is required");
+        }
+
         String supplierName = request.supplierName();
         if (supplierName == null || supplierName.isBlank()) {
-            supplierName = request.itemName();
+            supplierName = itemName;
         }
 
         PurchaseRequest purchaseRequest = PurchaseRequest.builder()
                 .invoiceNumber(generateInvoiceNumber())
                 .supplierName(supplierName.trim())
+                .itemName(itemName)
                 .totalAmount(request.quantity())
                 .unit(request.unit())
                 .requiresDeposit(request.requiresDeposit())
@@ -61,7 +67,7 @@ public class PurchaseRequestService {
         PurchaseRequest saved = purchaseRequestRepository.save(purchaseRequest);
         return new CreatePurchaseResponse(
                 saved.getId(),
-                request.itemName(),
+                itemName,
                 request.quantity(),
                 request.unit(),
                 request.requiresDeposit(),
@@ -92,6 +98,7 @@ public class PurchaseRequestService {
                 purchaseRequest.getId(),
                 purchaseRequest.getInvoiceNumber(),
                 purchaseRequest.getSupplierName(),
+                purchaseRequest.getItemName(),
                 purchaseRequest.getTotalAmount(),
                 purchaseRequest.getStatus(),
                 purchaseRequest.getIssuedAt()

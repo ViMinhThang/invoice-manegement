@@ -7,6 +7,7 @@ public record PurchaseRequestResponse(
                 Long id,
                 String invoiceNumber,
                 String customerName,
+                String itemName,
                 BigDecimal totalAmount,
                 String status,
                 Instant issuedAt) {

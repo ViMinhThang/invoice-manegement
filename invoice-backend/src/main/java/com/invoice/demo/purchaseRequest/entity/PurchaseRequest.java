@@ -34,6 +34,9 @@ public class PurchaseRequest {
     @Column(nullable = false)
     private String supplierName;
 
+    @Column(length = 255)
+    private String itemName;
+
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal totalAmount;
 

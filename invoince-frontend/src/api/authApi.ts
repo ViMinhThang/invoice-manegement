@@ -27,6 +27,8 @@ type LoginResponse = {
   accessToken: string
 }
 
+export type CurrentUserResponse = LoginUser
+
 export const loginApi = async (payload: LoginPayload): Promise<LoginResponse> => {
   const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
     method: 'POST',
@@ -70,4 +72,28 @@ export const registerApi = async (payload: RegisterPayload): Promise<LoginRespon
   }
 
   return (await response.json()) as LoginResponse
+}
+
+export const getCurrentUserApi = async (): Promise<CurrentUserResponse> => {
+  const token = localStorage.getItem(ACCESS_TOKEN_KEY)
+  const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+    headers: token
+      ? {
+          Authorization: `Bearer ${token}`,
+        }
+      : undefined,
+  })
+
+  if (!response.ok) {
+    let errorMessage = `Get current user failed (${response.status})`
+    try {
+      const errorBody = (await response.json()) as { message?: string; error?: string }
+      errorMessage = errorBody.message ?? errorBody.error ?? errorMessage
+    } catch {
+      // keep fallback message
+    }
+    throw new Error(errorMessage)
+  }
+
+  return (await response.json()) as CurrentUserResponse
 }

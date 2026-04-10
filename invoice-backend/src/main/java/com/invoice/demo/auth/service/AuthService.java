@@ -10,6 +10,7 @@ import com.invoice.demo.user.entity.UserRole;
 import com.invoice.demo.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,6 +54,18 @@ public class AuthService {
 
         String token = jwtService.generateToken(user);
         return new AuthResponse("Login success", toUserResponse(user), token);
+    }
+
+    @Transactional(readOnly = true)
+    public AuthUserResponse me(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
+
+        User user = userRepository.findByEmailIgnoreCase(authentication.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
+
+        return toUserResponse(user);
     }
 
     private AuthUserResponse toUserResponse(User user) {

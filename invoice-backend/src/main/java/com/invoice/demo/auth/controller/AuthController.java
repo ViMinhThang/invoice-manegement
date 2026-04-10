@@ -1,12 +1,15 @@
 package com.invoice.demo.auth.controller;
 
 import com.invoice.demo.auth.dto.AuthResponse;
+import com.invoice.demo.auth.dto.AuthUserResponse;
 import com.invoice.demo.auth.dto.LoginRequest;
 import com.invoice.demo.auth.dto.RegisterRequest;
 import com.invoice.demo.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,5 +31,10 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
+    }
+
+    @GetMapping("/me")
+    public AuthUserResponse me(Authentication authentication) {
+        return authService.me(authentication);
     }
 }
