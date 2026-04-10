@@ -97,13 +97,13 @@ const Register = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-4 pl-12 bg-white/80 rounded-2xl outline-none focus:ring-2 focus:ring-[#0f172a] text-sm font-semibold"
+                  className="w-full p-4 pl-12 pr-14 bg-white/80 rounded-2xl outline-none focus:ring-2 focus:ring-[#0f172a] text-sm font-semibold"
                 />
                 <button
                   type="button"
                   tabIndex={-1}
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-4 flex items-center text-gray-400"
+                  className="absolute inset-y-0 right-2 my-2 px-2 rounded-lg flex items-center justify-center text-gray-500 hover:bg-slate-200/70 hover:text-[#0f172a] transition-colors"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -124,13 +124,13 @@ const Register = () => {
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full p-4 pl-12 bg-white/80 rounded-2xl outline-none focus:ring-2 focus:ring-[#0f172a] text-sm font-semibold"
+                  className="w-full p-4 pl-12 pr-14 bg-white/80 rounded-2xl outline-none focus:ring-2 focus:ring-[#0f172a] text-sm font-semibold"
                 />
                 <button
                   type="button"
                   tabIndex={-1}
                   onClick={() => setShowConfirm(!showConfirm)}
-                  className="absolute inset-y-0 right-4 flex items-center text-gray-400"
+                  className="absolute inset-y-0 right-2 my-2 px-2 rounded-lg flex items-center justify-center text-gray-500 hover:bg-slate-200/70 hover:text-[#0f172a] transition-colors"
                 >
                   {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>

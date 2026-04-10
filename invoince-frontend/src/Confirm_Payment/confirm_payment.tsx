@@ -162,10 +162,10 @@ const PaymentQueue = () => {
           <div className="mt-4">
             <div className="grid grid-cols-12 px-6 mb-4 text-[11px] font-bold text-gray-500 uppercase tracking-widest">
               <div className="col-span-2">Mã giao dịch</div>
-              <div className="col-span-3">Nhà cung cấp</div>
+              <div className="col-span-2">Nhà cung cấp</div>
               <div className="col-span-2 text-center">Thành tiền</div>
               <div className="col-span-2 text-center">Hạn thanh toán</div>
-              <div className="col-span-1 text-center">Trạng thái</div>
+              <div className="col-span-2 text-center">Trạng thái</div>
               <div className="col-span-2 text-center">Thao tác</div>
             </div>
 
@@ -176,10 +176,10 @@ const PaymentQueue = () => {
                   className="grid grid-cols-12 items-center bg-[#aeb9c7] hover:bg-[#a4b0bf] transition-all p-6 rounded-2xl shadow-sm border border-transparent hover:border-white/20"
                 >
                   <div className="col-span-2 font-bold text-xs tracking-tight">{item.invoiceNumber}</div>
-                  <div className="col-span-3 font-bold text-sm truncate pr-4">{item.customerName}</div>
+                  <div className="col-span-2 font-bold text-sm truncate pr-4">{item.customerName}</div>
                   <div className="col-span-2 text-center font-black text-lg">{formatCurrency(item.totalAmount)}</div>
                   <div className="col-span-2 text-center text-sm font-medium">{formatDate(item.deadline)}</div>
-                  <div className="col-span-1 flex justify-center">
+                  <div className="col-span-2 flex justify-center">
                     <span className="px-3 py-1 rounded-full text-[10px] font-black tracking-tighter bg-[#ced7e0] text-[#4b5563] uppercase">
                       {item.invoiceStatus}
                     </span>

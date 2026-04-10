@@ -1,5 +1,5 @@
 ﻿import React, { useState } from 'react'
-import { Eye, EyeOff, Lock, User, ArrowRight } from 'lucide-react'
+import { Eye, EyeOff, Lock, Mail, ArrowRight } from 'lucide-react'
 import { ACCESS_TOKEN_KEY, USER_ROLE_KEY, loginApi } from '../api/authApi'
 
 const Login = () => {
@@ -53,14 +53,15 @@ const Login = () => {
                 Account / Email
               </label>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-4 flex items-center text-gray-500 group-focus-within:text-[#0f172a] transition-colors">
-                  <User size={18} />
+                <div className="absolute inset-y-0 left-4 z-10 flex items-center pointer-events-none text-gray-500 group-focus-within:text-[#0f172a] transition-colors">
+                  <Mail size={18} />
                 </div>
                 <input
                   type="text"
+                  placeholder="email@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-4 pl-12 bg-white/80 backdrop-blur-sm rounded-2xl outline-none focus:ring-2 focus:ring-[#0f172a] transition-all text-sm font-semibold"
+                  className="w-full p-4 pl-12 pr-4 bg-white/80 backdrop-blur-sm rounded-2xl outline-none focus:ring-2 focus:ring-[#0f172a] transition-all text-sm font-semibold"
                 />
               </div>
             </div>
@@ -70,19 +71,20 @@ const Login = () => {
                 <label className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">Password</label>
               </div>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-4 flex items-center text-gray-500 group-focus-within:text-[#0f172a] transition-colors">
+                <div className="absolute inset-y-0 left-4 z-10 flex items-center pointer-events-none text-gray-500 group-focus-within:text-[#0f172a] transition-colors">
                   <Lock size={18} />
                 </div>
                 <input
                   type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-4 pl-12 bg-white/80 backdrop-blur-sm rounded-2xl outline-none focus:ring-2 focus:ring-[#0f172a] transition-all text-sm font-semibold"
+                  className="hide-native-password-toggle w-full p-4 pl-12 pr-14 bg-white/80 backdrop-blur-sm rounded-2xl outline-none focus:ring-2 focus:ring-[#0f172a] transition-all text-sm font-semibold"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-4 flex items-center text-gray-400 hover:text-[#0f172a]"
+                  className="absolute inset-y-0 right-2 my-2 px-2 rounded-lg flex items-center justify-center text-gray-500 hover:bg-slate-200/70 hover:text-[#0f172a] transition-colors"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
