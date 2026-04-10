@@ -91,9 +91,6 @@ const RecordBill = () => {
           <h1 className="text-4xl font-black text-[#0f172a] mb-2 tracking-tighter">
             GHI NHẬN HÓA ĐƠN PHẢI TRẢ
           </h1>
-          <p className="text-gray-600 text-lg">
-            Liên kết hóa đơn vật lý với yêu cầu mua hàng hiện có để đối chiếu.
-          </p>
         </div>
 
         <div className="bg-[#aeb9c7] p-10 rounded-2xl shadow-sm space-y-8 mb-10">

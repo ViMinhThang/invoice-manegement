@@ -40,7 +40,7 @@ function App() {
                   <Route path="/payments" element={<PaymentQueue />} />
                   <Route path="/record-bill" element={<RecordBill />} />
                   <Route path="/dashboard" element={<div className="p-8">Dashboard Page</div>} />
-                  <Route path="*" element={<div className="p-8">404 - Không tìm thấy trang</div>} />
+                  <Route path="*" element={<div className="p-8">404 - Page not found</div>} />
                 </Routes>
               </Sidebar>
             ) : (

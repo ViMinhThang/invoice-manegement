@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ChevronDown, Pencil, Trash2, X, AlertCircle } from 'lucide-react'
-import { confirmPaid, deleteBill, getApiMode, getBills, updateBill } from '../api/purchaseRequestApi'
+import { confirmPaid, deleteBill,getBills, updateBill } from '../api/purchaseRequestApi'
 import type { BillItem } from '../mocks/purchaseRequestMockApi'
 
 const formatCurrency = (amount: number) =>
