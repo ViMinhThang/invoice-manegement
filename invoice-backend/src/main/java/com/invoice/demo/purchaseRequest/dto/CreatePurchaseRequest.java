@@ -6,6 +6,5 @@ public record CreatePurchaseRequest(
         String itemName,
         BigDecimal quantity,
         String unit,
-        boolean requiresDeposit
-) {
+        boolean requiresDeposit) {
 }
