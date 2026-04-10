@@ -64,11 +64,12 @@ const ItemDetailsForm = () => {
 
   return (
     <div className="min-h-screen bg-[#d1d9e2] flex items-center justify-center p-4">
+      <div className="max-w-xl w-full"> 
+    <h1 className="text-2xl font-black text-[#0f172a] mb-6 text-left uppercase tracking-tight">
+      Chi tiết mặt hàng
+    </h1>
       <div className="max-w-xl w-full p-8 bg-[#aeb9c7] rounded-xl shadow-lg font-sans text-gray-700">
-        <h2 className="text-2xl font-black text-[#0f172a] mb-8 text-center uppercase tracking-tight">
-          Chi tiết mặt hàng
-        </h2>
-
+  
         <div className="space-y-6">
           <div>
             <label className="block text-xs font-bold text-[#6a7282] uppercase tracking-wider mb-2">
@@ -174,6 +175,7 @@ const ItemDetailsForm = () => {
             </button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   )
