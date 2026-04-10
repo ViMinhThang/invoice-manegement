@@ -4,7 +4,7 @@ import { confirmPaid, deleteBill, getApiMode, getBills, updateBill } from '../ap
 import type { BillItem } from '../mocks/purchaseRequestMockApi'
 
 const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)
+  `${new Intl.NumberFormat('vi-VN').format(amount)} VNĐ`
 
 const formatDate = (isoDate: string) =>
   new Date(isoDate).toLocaleDateString('vi-VN', {
@@ -12,6 +12,8 @@ const formatDate = (isoDate: string) =>
     month: 'short',
     day: '2-digit',
   })
+
+const USER_ROLE_KEY = 'userRole'
 
 const PaymentQueue = () => {
   const [payments, setPayments] = useState<BillItem[]>([])
@@ -24,6 +26,8 @@ const PaymentQueue = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<BillItem | null>(null)
   const [savingEdit, setSavingEdit] = useState(false)
+  const userRole = localStorage.getItem(USER_ROLE_KEY)
+  const isAdmin = userRole === 'ADMIN'
 
   const fetchBills = async () => {
     setLoading(true)
@@ -44,6 +48,10 @@ const PaymentQueue = () => {
   }, [])
 
   const handleConfirmPaid = async (invoiceId: number) => {
+    if (!isAdmin) {
+      setErrorMessage('Bạn không có quyền confirm thanh toán.')
+      return
+    }
     setErrorMessage('')
     setConfirmingInvoiceIds((prev) => [...prev, invoiceId])
 
@@ -133,10 +141,14 @@ const PaymentQueue = () => {
         <div className="flex justify-between items-end mb-8">
           <div>
             <h1 className="text-3xl font-black mb-1 tracking-tighter uppercase">Hóa đơn thanh toán</h1>
-            
+            <p className="text-gray-600 text-sm italic">Chế độ API: {getApiMode()}</p>
           </div>
 
-         
+          <div className="flex gap-3">
+            <button className="flex items-center gap-2 bg-white px-4 py-2 rounded-md text-sm font-semibold shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors">
+              Tất cả trạng thái <ChevronDown size={16} />
+            </button>
+          </div>
         </div>
 
         {loading && <div className="bg-white/50 p-4 rounded-xl animate-pulse text-center">Đang tải dữ liệu...</div>}
@@ -150,11 +162,11 @@ const PaymentQueue = () => {
           <div className="mt-4">
             <div className="grid grid-cols-12 px-6 mb-4 text-[11px] font-bold text-gray-500 uppercase tracking-widest">
               <div className="col-span-2">Mã giao dịch</div>
-              <div className="col-span-3">Nhà cung cấp</div>
+              <div className="col-span-2">Nhà cung cấp</div>
               <div className="col-span-2 text-center">Thành tiền</div>
               <div className="col-span-2 text-center">Hạn thanh toán</div>
-              <div className="col-span-1 text-center">Trạng thái</div>
-              <div className="col-span-2 text-right">Thao tác</div>
+              <div className="col-span-2 text-center">Trạng thái</div>
+              <div className="col-span-2 text-center">Thao tác</div>
             </div>
 
             <div className="space-y-4">
@@ -164,25 +176,27 @@ const PaymentQueue = () => {
                   className="grid grid-cols-12 items-center bg-[#aeb9c7] hover:bg-[#a4b0bf] transition-all p-6 rounded-2xl shadow-sm border border-transparent hover:border-white/20"
                 >
                   <div className="col-span-2 font-bold text-xs tracking-tight">{item.invoiceNumber}</div>
-                  <div className="col-span-3 font-bold text-sm truncate pr-4">{item.customerName}</div>
+                  <div className="col-span-2 font-bold text-sm truncate pr-4">{item.customerName}</div>
                   <div className="col-span-2 text-center font-black text-lg">{formatCurrency(item.totalAmount)}</div>
                   <div className="col-span-2 text-center text-sm font-medium">{formatDate(item.deadline)}</div>
-                  <div className="col-span-1 flex justify-center">
+                  <div className="col-span-2 flex justify-center">
                     <span className="px-3 py-1 rounded-full text-[10px] font-black tracking-tighter bg-[#ced7e0] text-[#4b5563] uppercase">
                       {item.invoiceStatus}
                     </span>
                   </div>
 
-                  <div className="col-span-2 flex justify-end items-center gap-4">
+                  <div className="col-span-2 flex justify-center items-center gap-4">
                     <button
                       onClick={() => handleConfirmPaid(item.invoiceId)}
                       disabled={
+                        !isAdmin ||
                         item.invoiceStatus !== 'Awaiting Payment' ||
                         confirmingInvoiceIds.includes(item.invoiceId)
                       }
                       className="bg-[#0f172a] text-white text-[10px] font-bold py-2 px-4 rounded-lg hover:bg-black transition-colors uppercase cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                      title={isAdmin ? 'Confirm thanh toán' : 'Chỉ ADMIN mới có quyền confirm'}
                     >
-                      {confirmingInvoiceIds.includes(item.invoiceId) ? 'Đang xác nhận...' : 'Xác nhận'}
+                      {confirmingInvoiceIds.includes(item.invoiceId) ? 'Đang confirm...' : 'Confirm'}
                     </button>
 
                     <button
@@ -233,7 +247,7 @@ const PaymentQueue = () => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Số tiền (VND)</label>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Số tiền (VNĐ)</label>
                 <input
                   type="number"
                   value={editingItem.totalAmount}
@@ -248,7 +262,8 @@ const PaymentQueue = () => {
                   <select
                     value={editingItem.invoiceStatus}
                     onChange={(e) => setEditingItem({ ...editingItem, invoiceStatus: e.target.value })}
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none appearance-none font-semibold cursor-pointer"
+                    disabled={!isAdmin}
+                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none appearance-none font-semibold cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     <option value="Awaiting Payment">Awaiting Payment (Chờ duyệt)</option>
                     <option value="Completed/Invoiced">Completed/Invoiced (Đã thanh toán)</option>
@@ -256,6 +271,9 @@ const PaymentQueue = () => {
                   </select>
                   <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
                 </div>
+                {!isAdmin && (
+                  <p className="mt-2 text-xs text-amber-700">Chỉ ADMIN mới có quyền chỉnh sửa trạng thái.</p>
+                )}
               </div>
             </div>
 

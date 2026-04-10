@@ -109,7 +109,7 @@ public class BillService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bill not found"));
 
         PurchaseRequest purchaseRequest = bill.getPurchaseRequest();
-        purchaseRequest.setCustomerName(request.customerName().trim());
+        purchaseRequest.setSupplierName(request.customerName().trim());
         purchaseRequest.setStatus(request.invoiceStatus().trim());
         purchaseRequestRepository.save(purchaseRequest);
 
@@ -125,7 +125,7 @@ public class BillService {
                 bill.getId(),
                 purchaseRequest.getId(),
                 purchaseRequest.getInvoiceNumber(),
-                purchaseRequest.getCustomerName(),
+                purchaseRequest.getSupplierName(),
                 bill.getTotalAmount(),
                 bill.getDeadline(),
                 bill.getAttachmentName(),

@@ -11,6 +11,7 @@ const Sidebar = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const ACCESS_TOKEN_KEY = 'accessToken';
+  const USER_ROLE_KEY = 'userRole';
 
   const menuItems = [
     { name: 'Đơn Hàng', icon: <LayoutDashboard size={20} />, path: '/invoices' },
@@ -20,6 +21,7 @@ const Sidebar = ({ children }) => {
 
   const handleLogout = () => {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(USER_ROLE_KEY);
     window.location.href = '/login';
   };
 
@@ -39,7 +41,7 @@ const Sidebar = ({ children }) => {
               <button
                 key={item.name}
                 onClick={() => navigate(item.path)}
-                className={`w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-all text-sm font-medium ${
+                className={`w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-all text-sm font-medium cursor-pointer ${
                   isActive 
                     ? 'bg-[#e5c49e] text-[#0a1931]'
                     : 'text-gray-400 hover:bg-white/10 hover:text-white'
@@ -55,7 +57,7 @@ const Sidebar = ({ children }) => {
         <div className="px-4 pb-4">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-all text-sm font-medium text-gray-300 hover:bg-red-500/20 hover:text-red-200"
+            className="w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-all text-sm font-medium text-gray-300 hover:bg-red-500/20 hover:text-red-200 cursor-pointer"
           >
             <LogOut size={20} />
             Đăng xuất

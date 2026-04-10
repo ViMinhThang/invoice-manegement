@@ -1,1 +1,7 @@
 @import "tailwindcss";
+
+/* Hide browser-native password reveal controls (Edge/IE) to avoid duplicate toggles. */
+.hide-native-password-toggle::-ms-reveal,
+.hide-native-password-toggle::-ms-clear {
+  display: none;
+}

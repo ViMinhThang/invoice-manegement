@@ -38,10 +38,10 @@ public class PurchaseRequestSeeder implements CommandLineRunner {
         purchaseRequestRepository.saveAll(purchaseRequests);
     }
 
-    private PurchaseRequest purchaseRequest(String invoiceNumber, String customerName, String amount, String status, Instant issuedAt) {
+    private PurchaseRequest purchaseRequest(String invoiceNumber, String supplierName, String amount, String status, Instant issuedAt) {
         return PurchaseRequest.builder()
                 .invoiceNumber(invoiceNumber)
-                .customerName(customerName)
+                .supplierName(supplierName)
                 .totalAmount(new BigDecimal(amount))
                 .unit("Cai")
                 .requiresDeposit(false)

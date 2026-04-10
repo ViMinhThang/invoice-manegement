@@ -45,7 +45,7 @@ public class PurchaseRequestService {
         Instant now = Instant.now();
         PurchaseRequest purchaseRequest = PurchaseRequest.builder()
                 .invoiceNumber(generateInvoiceNumber())
-                .customerName(request.itemName())
+                .supplierName(request.itemName())
                 .totalAmount(request.quantity())
                 .unit(request.unit())
                 .requiresDeposit(request.requiresDeposit())
@@ -86,7 +86,7 @@ public class PurchaseRequestService {
         return new PurchaseRequestResponse(
                 purchaseRequest.getId(),
                 purchaseRequest.getInvoiceNumber(),
-                purchaseRequest.getCustomerName(),
+                purchaseRequest.getSupplierName(),
                 purchaseRequest.getTotalAmount(),
                 purchaseRequest.getStatus(),
                 purchaseRequest.getIssuedAt()

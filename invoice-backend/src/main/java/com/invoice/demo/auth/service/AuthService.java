@@ -6,6 +6,7 @@ import com.invoice.demo.auth.dto.LoginRequest;
 import com.invoice.demo.auth.dto.RegisterRequest;
 import com.invoice.demo.security.JwtService;
 import com.invoice.demo.user.entity.User;
+import com.invoice.demo.user.entity.UserRole;
 import com.invoice.demo.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,7 @@ public class AuthService {
                 .fullName(request.fullName().trim())
                 .email(normalizedEmail)
                 .password(passwordEncoder.encode(request.password()))
+                .role(UserRole.EMPLOYEE)
                 .build();
 
         User saved = userRepository.save(user);
@@ -54,6 +56,6 @@ public class AuthService {
     }
 
     private AuthUserResponse toUserResponse(User user) {
-        return new AuthUserResponse(user.getId(), user.getFullName(), user.getEmail());
+        return new AuthUserResponse(user.getId(), user.getFullName(), user.getEmail(), user.getRole().name());
     }
 }
