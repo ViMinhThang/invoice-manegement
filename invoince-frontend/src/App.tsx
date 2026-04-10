@@ -29,20 +29,20 @@ function App() {
         <Route
           path="/*"
           element={
-            isAuthenticated() ? (
-              <Sidebar>
-                <Routes>
-                  <Route path="/" element={<Navigate to="/invoices" replace />} />
-                  <Route path="/invoices" element={<ItemDetailsForm />} />
-                  <Route path="/payments" element={<PaymentQueue />} />
-                  <Route path="/record-bill" element={<RecordBill />} />
-                  <Route path="/dashboard" element={<div className="p-8">Dashboard Page</div>} />
-                  <Route path="*" element={<div className="p-8">404 - Page not found</div>} />
-                </Routes>
-              </Sidebar>
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            <Sidebar>
+              <Routes>
+                <Route path="/" element={<Navigate to="/invoices" replace />} />
+                
+                <Route path="/invoices" element={<ItemDetailsForm />} />
+                <Route path="/payments" element={<PaymentQueue />} />
+                <Route path="/record-bill" element={<RecordBill />} />
+                <Route path="/dashboard" element={<div className="p-8">Dashboard Page</div>} />
+              
+                
+                <Route path="*" element={<div className="p-8">404 - Không tìm thấy trang</div>} />
+              </Routes>
+            </Sidebar>
+          
           }
         />
       </Routes>

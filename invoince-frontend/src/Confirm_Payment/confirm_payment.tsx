@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ChevronDown, Pencil, Trash2, X, AlertCircle } from 'lucide-react'
-import { confirmPaid, deleteBill, getApiMode, getBills, updateBill } from '../api/purchaseRequestApi'
+import { confirmPaid, deleteBill,getBills, updateBill } from '../api/purchaseRequestApi'
 import type { BillItem } from '../mocks/purchaseRequestMockApi'
 
 const formatCurrency = (amount: number) =>
@@ -133,14 +133,10 @@ const PaymentQueue = () => {
         <div className="flex justify-between items-end mb-8">
           <div>
             <h1 className="text-3xl font-black mb-1 tracking-tighter uppercase">Hóa đơn thanh toán</h1>
-            <p className="text-gray-600 text-sm italic">Chế độ API: {getApiMode()}</p>
+            
           </div>
 
-          <div className="flex gap-3">
-            <button className="flex items-center gap-2 bg-white px-4 py-2 rounded-md text-sm font-semibold shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors">
-              Tất cả trạng thái <ChevronDown size={16} />
-            </button>
-          </div>
+         
         </div>
 
         {loading && <div className="bg-white/50 p-4 rounded-xl animate-pulse text-center">Đang tải dữ liệu...</div>}
