@@ -4,7 +4,7 @@ import { confirmPaid, deleteBill, getApiMode, getBills, updateBill } from '../ap
 import type { BillItem } from '../mocks/purchaseRequestMockApi'
 
 const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)
+  `${new Intl.NumberFormat('vi-VN').format(amount)} VNĐ`
 
 const formatDate = (isoDate: string) =>
   new Date(isoDate).toLocaleDateString('vi-VN', {
@@ -247,7 +247,7 @@ const PaymentQueue = () => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Số tiền (VND)</label>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Số tiền (VNĐ)</label>
                 <input
                   type="number"
                   value={editingItem.totalAmount}
